@@ -1,271 +1,134 @@
-<!DOCTYPE html> 
-<html lang="cs">  
+<!DOCTYPE html>
+<html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Casino Automat - Leveling</title>
+    <title>VIP Casino Pro</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a2e;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .casino-container {
-            background-color: #16213e;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 15px #e94560;
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            background: #0f3460;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 2px solid #e94560;
-        }
-
-        .balance {
-            color: #ffd700;
-            font-weight: bold;
-        }
-
-        .level {
-            color: #4dffff;
-            font-weight: bold;
-        }
-
-        .slots {
-            display: flex;
-            justify-content: space-between;
-            background-color: #000;
-            padding: 20px;
-            border-radius: 10px;
-            border: 3px solid #e94560;
-            margin-bottom: 20px;
-        }
-
-        .reel {
-            font-size: 4rem;
-            width: 80px;
-            height: 80px;
-            background-color: #fff;
-            color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
-
-        .controls {
-            margin-bottom: 20px;
-        }
-
-        button {
-            background-color: #e94560;
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.1s, background-color 0.3s;
-            text-transform: uppercase;
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
-
-        button:hover {
-            background-color: #ff5c77;
-        }
-
-        button:disabled {
-            background-color: #555;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .message {
-            min-height: 30px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-top: 10px;
-        }
+        body { background-color: #1a1a2e; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .container { background-color: #16213e; padding: 25px; border-radius: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.5); width: 100%; max-width: 600px; text-align: center; }
+        .stats { display: flex; justify-content: space-around; background: #0f3460; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .slots { display: flex; justify-content: center; gap: 15px; font-size: 3rem; background: #000; padding: 30px; border-radius: 15px; margin-bottom: 20px; border: 2px solid #e94560; }
+        .reel { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: #fff; color: #000; border-radius: 8px; }
+        .buffs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+        button { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        #spinBtn { width: 100%; background-color: #e94560; color: white; font-size: 1.5rem; margin-bottom: 20px; }
+        #spinBtn:hover { background-color: #ff5c77; }
+        .buff-btn { background-color: #0f3460; color: #fff; font-size: 0.8rem; }
+        .buff-btn:hover { background-color: #4dffff; color: #000; }
+        .message { height: 30px; font-weight: bold; margin-bottom: 10px; color: #4dffff; }
     </style>
 </head>
 <body>
 
-    <div class="casino-container">
-        <h1>💎 VIP SLOTY 💎</h1>
-        
-        <div class="stats">
-            <div>Kredit: <span id="balance" class="balance">10000 Kč</span></div>
-            <div>Level: <span id="level" class="level">1</span></div>
-        </div>
-
-        <div class="slots">
-            <div class="reel" id="reel1">🍒</div>
-            <div class="reel" id="reel2">🍋</div>
-            <div class="reel" id="reel3">🍉</div>
-        </div>
-
-        <div class="controls">
-            <p>Cena za spin: <strong>500 Kč</strong></p>
-            <button id="spinBtn">Zatočit</button>
-        </div>
-
-        <div id="message" class="message">Vítej ve hře! Zkus své štěstí.</div>
+<div class="container">
+    <h1>🎰 VIP SLOT MACHINE</h1>
+    
+    <div class="stats">
+        <div>Kredit: <br><span id="balance">10000</span> Kč</div>
+        <div>Sázka: <br><span id="betPrice">500</span> Kč</div>
+        <div>Level: <br><span id="level">1</span></div>
     </div>
 
-    <script>
-        // Nastavení proměnných
-        let balance = 10000;
-        let level = 1;
-        const bet = 500;
-        const symbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '💎', '🔔'];
-        let isSpinning = false;
+    <div class="slots" id="reelContainer">
+        <div class="reel">🍒</div><div class="reel">🍒</div><div class="reel">🍒</div>
+    </div>
 
-        // Elementy na stránce
-        const balanceEl = document.getElementById('balance');
-        const levelEl = document.getElementById('level');
-        const reel1 = document.getElementById('reel1');
-        const reel2 = document.getElementById('reel2');
-        const reel3 = document.getElementById('reel3');
-        const messageEl = document.getElementById('message');
-        const spinBtn = document.getElementById('spinBtn');
+    <div id="message" class="message">Hodně štěstí!</div>
+    <button id="spinBtn">ZATOČIT</button>
 
-        // Funkce pro aktualizaci UI (Kreditu a Levelu)
-        function updateUI() {
-            balanceEl.innerText = balance + ' Kč';
-            levelEl.innerText = level;
+    <div class="buffs">
+        <button class="buff-btn" onclick="buyBuff('luck')">Štěstí<br><span id="p_luck">1000</span> Kč</button>
+        <button class="buff-btn" onclick="buyBuff('slots')">Více slotů<br><span id="p_slots">2000</span> Kč</button>
+        <button class="buff-btn" onclick="buyBuff('profit')">Zisk (+1)<br><span id="p_profit">1500</span> Kč</button>
+    </div>
+</div>
+
+<script>
+    let state = {
+        balance: 10000,
+        bet: 500,
+        level: 1,
+        slotsCount: 3,
+        luck: 0,
+        profitBonus: 0,
+        prices: { luck: 1000, slots: 2000, profit: 1500 }
+    };
+
+    const symbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '💎', '🔔'];
+
+    function updateUI() {
+        document.getElementById('balance').innerText = Math.floor(state.balance);
+        document.getElementById('betPrice').innerText = Math.floor(state.bet);
+        document.getElementById('level').innerText = state.level;
+        for(let key in state.prices) {
+            document.getElementById('p_'+key).innerText = Math.floor(state.prices[key]);
         }
+    }
 
-        // Kontrola a zvýšení levelu
-        function checkLevel() {
-            // Level se zvyšuje za každých 5000 nad základních 10000
-            let expectedLevel = Math.floor(Math.max(0, balance - 10000) / 5000) + 1;
+    function buyBuff(type) {
+        if (state.balance >= state.prices[type]) {
+            state.balance -= state.prices[type];
+            state.prices[type] *= 1.5; // Zvýšení ceny buffu o 50%
             
-            if (expectedLevel > level) {
-                level = expectedLevel;
-                messageEl.innerText += ` 🎉 LEVEL UP! Nyní jsi level ${level}!`;
-            } else if (balance <= 10000) {
-                level = 1; // Pokud spadne pod 10k, level se vrací na 1
+            if(type === 'luck') state.luck += 5;
+            if(type === 'slots') { 
+                state.slotsCount++; 
+                renderReels(); 
             }
-        }
-
-        // Funkce pro Game Over
-        function gameOver() {
-            messageEl.innerText = "GAME OVER! Nula na účtě.";
-            messageEl.style.color = "red";
+            if(type === 'profit') state.profitBonus += 1;
             
-            setTimeout(() => {
-                alert("GAME OVER! Prohrál jsi všechno. Začínáme odznova.");
-                balance = 10000;
-                level = 1;
-                messageEl.innerText = "Nová hra! Hodně štěstí.";
-                messageEl.style.color = "white";
-                updateUI();
-            }, 500);
+            updateUI();
+        } else {
+            alert("Nedostatek kreditu!");
         }
+    }
 
-        // Logika výhry
-        function checkWin(r1, r2, r3) {
-            if (r1 === r2 && r2 === r3) {
-                // 3 stejné = Jackpot (10x)
-                let winAmount = bet * 10;
-                balance += winAmount;
-                messageEl.innerText = `🔥 JACKPOT! Vyhráváš ${winAmount} Kč! 🔥`;
-                messageEl.style.color = "#ffd700";
-            } else if (r1 === r2 || r2 === r3 || r1 === r3) {
-                // 2 stejné = Menší výhra (2x)
-                let winAmount = bet * 2;
-                balance += winAmount;
-                messageEl.innerText = `Menší výhra! Získáváš ${winAmount} Kč.`;
-                messageEl.style.color = "#4dffff";
+    function renderReels() {
+        const container = document.getElementById('reelContainer');
+        container.innerHTML = '';
+        for(let i=0; i<state.slotsCount; i++) {
+            container.innerHTML += '<div class="reel">🍒</div>';
+        }
+    }
+
+    document.getElementById('spinBtn').onclick = () => {
+        if (state.balance < state.bet) {
+            alert("GAME OVER! Začínáš od začátku.");
+            state = { balance: 10000, bet: 500, level: 1, slotsCount: 3, luck: 0, profitBonus: 0, prices: { luck: 1000, slots: 2000, profit: 1500 }};
+            renderReels();
+        } else {
+            state.balance -= state.bet;
+            state.bet *= 1.01; // Zdražení točky o 1%
+            
+            let results = [];
+            for(let i=0; i<state.slotsCount; i++) {
+                // Štěstí snižuje náhodu (posouvá výběr symbolů k těm "lepším")
+                let randomIndex = Math.floor(Math.random() * (symbols.length - Math.min(state.luck / 10, 5)));
+                results.push(symbols[randomIndex]);
+            }
+            
+            const reels = document.querySelectorAll('.reel');
+            results.forEach((s, i) => reels[i].innerText = s);
+
+            // Vyhodnocení výhry
+            let isWin = results.every(val => val === results[0]);
+            if (isWin) {
+                let win = state.bet * (3 + state.profitBonus);
+                state.balance += win;
+                document.getElementById('message').innerText = "VÝHRA: " + Math.floor(win) + " Kč!";
             } else {
-                // Nic = Prohra
-                messageEl.innerText = `Nic nepadlo. Zkus to znovu.`;
-                messageEl.style.color = "#fff";
-            }
-
-            checkLevel();
-            updateUI();
-
-            // Pokud po odehrání nemá na další spin
-            if (balance < bet) {
-                gameOver();
+                document.getElementById('message').innerText = "Zkus to znovu!";
             }
         }
-
-        // Hlavní funkce pro točení
-        function spin() {
-            if (isSpinning) return;
-            if (balance < bet) {
-                gameOver();
-                return;
-            }
-
-            // Odečteme sázku a zablokujeme tlačítko
-            balance -= bet;
-            updateUI();
-            isSpinning = true;
-            spinBtn.disabled = true;
-            messageEl.innerText = "Točí se...";
-            messageEl.style.color = "white";
-
-            let spins = 0;
-            const spinInterval = setInterval(() => {
-                // Falešný efekt točení
-                reel1.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-                reel2.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-                reel3.innerText = symbols[Math.floor(Math.random() * symbols.length)];
-                
-                spins++;
-                
-                // Po 15 rychlých protočeních automat zastavíme
-                if (spins >= 15) {
-                    clearInterval(spinInterval);
-                    
-                    // Finální výsledky
-                    const finalR1 = symbols[Math.floor(Math.random() * symbols.length)];
-                    const finalR2 = symbols[Math.floor(Math.random() * symbols.length)];
-                    const finalR3 = symbols[Math.floor(Math.random() * symbols.length)];
-                    
-                    reel1.innerText = finalR1;
-                    reel2.innerText = finalR2;
-                    reel3.innerText = finalR3;
-
-                    // Vyhodnotíme
-                    checkWin(finalR1, finalR2, finalR3);
-                    
-                    isSpinning = false;
-                    spinBtn.disabled = false;
-                }
-            }, 50); // Rychlost točení (50ms)
-        }
-
-        // Přidání posluchače na tlačítko
-        spinBtn.addEventListener('click', spin);
-
-        // Inicializace při načtení
+        state.level = Math.floor(state.balance / 5000) + 1;
         updateUI();
-    </script>
+    };
+
+    updateUI();
+</script>
+
+</body>
+</html>
 </body>
 </html>
