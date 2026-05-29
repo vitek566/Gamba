@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Automat - Leveling</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .casino-container {
+            background-color: #16213e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 15px #e94560;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            background: #0f3460;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid #e94560;
+        }
+
+        .balance {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .level {
+            color: #4dffff;
+            font-weight: bold;
+        }
+
+        .slots {
+            display: flex;
+            justify-content: space-between;
+            background-color: #000;
+            padding: 20px;
+            border-radius: 10px;
+            border: 3px solid #e94560;
+            margin-bottom: 20px;
+        }
+
+        .reel {
+            font-size: 4rem;
+            width: 80px;
+            height: 80px;
+            background-color: #fff;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #e94560;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button:hover {
+            background-color: #ff5c77;
+        }
+
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            min-height: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="casino-container">
+        <h1>💎 VIP SLOTY 💎</h1>
+        
+        <div class="stats">
+            <div>Kredit: <span id="balance" class="balance">10000 Kč</span></div>
+            <div>Level: <span id="level" class="level">1</span></div>
+        </div>
+
+        <div class="slots">
+            <div class="reel" id="reel1">🍒</div>
+            <div class="reel" id="reel2">🍋</div>
+            <div class="reel" id="reel3">🍉</div>
+        </div>
+
+        <div class="controls">
+            <p>Cena za spin: <strong>500 Kč</strong></p>
+            <button id="spinBtn">Zatočit</button>
+        </div>
+
+        <div id="message" class="message">Vítej ve hře! Zkus své štěstí.</div>
+    </div>
+
+    <script>
+        // Nastavení proměnných
+        let balance = 10000;
+        let level = 1;
+        const bet = 500;
+        const symbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '💎', '🔔'];
+        let isSpinning = false;
+
+        // Elementy na stránce
+        const balanceEl = document.getElementById('balance');
+        const levelEl = document.getElementById('level');
+        const reel1 = document.getElementById('reel1');
+        const reel2 = document.getElementById('reel2');
+        const reel3 = document.getElementById('reel3');
+        const messageEl = document.getElementById('message');
+        const spinBtn = document.getElementById('spinBtn');
+
+        // Funkce pro aktualizaci UI (Kreditu a Levelu)
+        function updateUI() {
+            balanceEl.innerText = balance + ' Kč';
+            levelEl.innerText = level;
+        }
+
+        // Kontrola a zvýšení levelu
+        function checkLevel() {
+            // Level se zvyšuje za každých 5000 nad základních 10000
+            let expectedLevel = Math.floor(Math.max(0, balance - 10000) / 5000) + 1;
+            
+            if (expectedLevel > level) {
+                level = expectedLevel;
+                messageEl.innerText += ` 🎉 LEVEL UP! Nyní jsi level ${level}!`;
+            } else if (balance <= 10000) {
+                level = 1; // Pokud spadne pod 10k, level se vrací na 1
+            }
+        }
+
+        // Funkce pro Game Over
+        function gameOver() {
+            messageEl.innerText = "GAME OVER! Nula na účtě.";
+            messageEl.style.color = "red";
+            
+            setTimeout(() => {
+                alert("GAME OVER! Prohrál jsi všechno. Začínáme odznova.");
+                balance = 10000;
+                level = 1;
+                messageEl.innerText = "Nová hra! Hodně štěstí.";
+                messageEl.style.color = "white";
+                updateUI();
+            }, 500);
+        }
+
+        // Logika výhry
+        function checkWin(r1, r2, r3) {
+            if (r1 === r2 && r2 === r3) {
+                // 3 stejné = Jackpot (10x)
+                let winAmount = bet * 10;
+                balance += winAmount;
+                messageEl.innerText = `🔥 JACKPOT! Vyhráváš ${winAmount} Kč! 🔥`;
+                messageEl.style.color = "#ffd700";
+            } else if (r1 === r2 || r2 === r3 || r1 === r3) {
+                // 2 stejné = Menší výhra (2x)
+                let winAmount = bet * 2;
+                balance += winAmount;
+                messageEl.innerText = `Menší výhra! Získáváš ${winAmount} Kč.`;
+                messageEl.style.color = "#4dffff";
+            } else {
+                // Nic = Prohra
+                messageEl.innerText = `Nic nepadlo. Zkus to znovu.`;
+                messageEl.style.color = "#fff";
+            }
+
+            checkLevel();
+            updateUI();
+
+            // Pokud po odehrání nemá na další spin
+            if (balance < bet) {
+                gameOver();
+            }
+        }
+
+        // Hlavní funkce pro točení
+        function spin() {
+            if (isSpinning) return;
+            if (balance < bet) {
+                gameOver();
+                return;
+            }
+
+            // Odečteme sázku a zablokujeme tlačítko
+            balance -= bet;
+            updateUI();
+            isSpinning = true;
+            spinBtn.disabled = true;
+            messageEl.innerText = "Točí se...";
+            messageEl.style.color = "white";
+
+            let spins = 0;
+            const spinInterval = setInterval(() => {
+                // Falešný efekt točení
+                reel1.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                reel2.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                reel3.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+                
+                spins++;
+                
+                // Po 15 rychlých protočeních automat zastavíme
+                if (spins >= 15) {
+                    clearInterval(spinInterval);
+                    
+                    // Finální výsledky
+                    const finalR1 = symbols[Math.floor(Math.random() * symbols.length)];
+                    const finalR2 = symbols[Math.floor(Math.random() * symbols.length)];
+                    const finalR3 = symbols[Math.floor(Math.random() * symbols.length)];
+                    
+                    reel1.innerText = finalR1;
+                    reel2.innerText = finalR2;
+                    reel3.innerText = finalR3;
+
+                    // Vyhodnotíme
+                    checkWin(finalR1, finalR2, finalR3);
+                    
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                }
+            }, 50); // Rychlost točení (50ms)
+        }
+
+        // Přidání posluchače na tlačítko
+        spinBtn.addEventListener('click', spin);
+
+        // Inicializace při načtení
+        updateUI();
+    </script>
+</body>
+</html>
