@@ -3,17 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Slot Machine: Evolution - New Design</title>
+    <title>Slots Evolution: Clover Debt</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<div id="jackpotOverlay" class="jackpot-overlay hidden">
+    <div class="jackpot-text">🎉 JACKPOT 🎉</div>
+</div>
+
 <div class="main-container">
-    <h1>Slots Evolution</h1>
+    <h1>Slots: Clover Debt</h1>
+    
+    <div class="debt-panel">
+        <div class="debt-box">Čas do splátky: <span id="timer" class="neon-text-red">03:00</span></div>
+        <div class="debt-box">Cíl ke splacení: <span id="debtAmount" class="neon-text-yellow">3000</span> Kč</div>
+    </div>
     
     <div class="stats">
         <div class="stat-box stat-balance">Kredit<br><span id="balance" class="stat-val">10000</span> Kč</div>
-        <div class="stat-box">Sázka<br><span id="betPrice" class="stat-val">500</span> Kč</div>
+        <div class="stat-box">Min. Sázka<br><span id="minBetDisplay" class="stat-val">500</span> Kč</div>
         <div class="stat-box stat-level">Level<br><span id="level" class="stat-val">1</span></div>
     </div>
 
@@ -22,7 +31,13 @@
             </div>
     </div>
 
-    <div id="gameStatus" class="game-status">Vítejte, zkusíte štěstí?</div>
+    <div id="gameStatus" class="game-status">Dokážeš splatit první dluh?</div>
+    
+    <div class="bet-input-container">
+        <label for="betInput">Tvoje Sázka: </label>
+        <input type="number" id="betInput" value="500" step="50">
+    </div>
+
     <button id="spinBtn">Zatočit</button>
 
     <div class="buffs">
@@ -30,7 +45,7 @@
             <span class="buff-title">Zvýšit Štěstí</span>
             <span class="buff-info">
                 <span class="buff-price"><span id="p_luck">1000</span> Kč</span>
-                <span class="buff-bonus">Šance +10%</span>
+                <span class="buff-bonus" id="luckBonusText">Šance +2% (Nyní: 20%)</span>
             </span>
         </button>
         <button class="buff-btn" id="buffSlots" onclick="buyBuff('slots')">
@@ -41,7 +56,7 @@
             </span>
         </button>
         <button class="buff-btn" id="buffProfit" onclick="buyBuff('profit')">
-            <span class="buff-title">Zvýšit Násobitel</span>
+            <span class="buff-title">Větší Ziskovost</span>
             <span class="buff-info">
                 <span class="buff-price"><span id="p_profit">1500</span> Kč</span>
                 <span class="buff-bonus">Zisk +1.0x</span>
