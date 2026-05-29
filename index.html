@@ -3,8 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slots Evolution: Clover Debt</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Slots Evolution: Clover Debt (All-in-One)</title>
+    <style>
+        body { 
+            background: #0d0d16; 
+            color: #fff; 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px; 
+        }
+
+        .main-container { 
+            background: #151526; 
+            padding: 25px; 
+            border-radius: 25px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(77, 255, 255, 0.1); 
+            width: 100%; 
+            max-width: 650px; 
+            text-align: center; 
+            border: 1px solid #222; 
+        }
+
+        h1 { 
+            font-size: 2rem; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            color: #fff; 
+            text-shadow: 0 0 10px #4dffff; 
+            margin-top: 0; 
+        }
+
+        /* Panel pro dluhy (Clover Pit styl) */
+        .debt-panel {
+            display: flex;
+            justify-content: space-between;
+            background: #1f1f38;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px dashed #4dffff;
+            font-weight: bold;
+        }
+        .neon-text-red { color: #ff4d4d; text-shadow: 0 0 8px #ff4d4d; }
+        .neon-text-yellow { color: #ffd700; text-shadow: 0 0 8px #ffd700; }
+
+        .stats { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 12px; 
+            background: #0a0a14; 
+            padding: 12px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+        }
+
+        .stat-box { font-size: 0.85rem; color: #888; }
+        .stat-val { font-size: 1.25rem; color: #fff; font-weight: bold; }
+        .stat-balance .stat-val { color: #ffd700; }
+        .stat-level .stat-val { color: #4dffff; }
+
+        .slot-machine { 
+            background: #000; 
+            border: 4px solid #4dffff; 
+            border-radius: 15px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 0 20px rgba(77, 255, 255, 0.3); 
+        }
+
+        .reel-container { 
+            display: flex; 
+            justify-content: center; 
+            gap: 10px; 
+            height: 90px; 
+            overflow: hidden; 
+            border-radius: 8px; 
+            background: #fff; 
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.6); 
+        }
+
+        .reel { 
+            width: 65px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-size: 3rem; 
+            line-height: 90px; 
+            position: relative; 
+            top: 0; 
+            color: #000;
+        }
+
+        @keyframes spinAnimation { 
+            0% { top: 0; } 
+            100% { top: -600px; } 
+        }
+
+        .spinning { 
+            animation: spinAnimation 0.08s linear infinite; 
+        }
+
+        /* Nastavení sázky */
+        .bet-input-container {
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .bet-input-container input {
+            background: #0a0a14;
+            color: #ffd700;
+            border: 1px solid #4dffff;
+            padding: 8px;
+            border-radius: 5px;
+            width: 100px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        #spinBtn { 
+            width: 100%; 
+            background: linear-gradient(135deg, #4dffff 0%, #008080 100%); 
+            color: #000; 
+            padding: 15px; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 1.5rem; 
+            margin-bottom: 20px; 
+            box-shadow: 0 5px 0 #004d4d; 
+        }
+        #spinBtn:hover:not(:disabled) { 
+            background: linear-gradient(135deg, #99ffff 0%, #4dffff 100%); 
+        }
+        #spinBtn:active { 
+            transform: translateY(3px); 
+            box-shadow: 0 2px 0 #004d4d; 
+        }
+        button:disabled { cursor: not-allowed; opacity: 0.4; }
+
+        .buffs { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 10px; 
+        }
+
+        .buff-btn { 
+            background: #111122; 
+            color: #fff; 
+            border: 1px solid #4dffff; 
+            padding: 10px 5px; 
+            border-radius: 8px; 
+            font-size: 0.8rem; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 3px; 
+        }
+        .buff-btn:hover:not(:disabled) { 
+            background: #4dffff; 
+            color: #000; 
+            box-shadow: 0 0 10px rgba(77,255,255,0.4); 
+        }
+        .buff-price { color: #ffd700; font-size: 0.85rem; font-weight: bold; }
+        .buff-bonus { color: #aaa; font-size: 0.7rem; text-transform: none; }
+
+        .game-status { height: 25px; font-weight: bold; margin-bottom: 15px; color: #ccc; }
+        .win-msg { color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,0.6); }
+
+        /* Celoobrazovkový Jackpot efekt */
+        .jackpot-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: rainbowFlash 0.15s infinite alternate;
+        }
+        .jackpot-text {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 30px #fff, 0 0 5px #ff00ff;
+            animation: textShake 0.1s infinite;
+        }
+        .hidden { display: none !important; }
+
+        @keyframes rainbowFlash {
+            0% { background-color: rgba(255, 0, 128, 0.8); }
+            100% { background-color: rgba(0, 255, 255, 0.8); }
+        }
+        @keyframes textShake {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            50% { transform: translate(-1px, -2px) rotate(-1deg); }
+            100% { transform: translate(1px, 2px) rotate(1deg); }
+        }
+    </style>
 </head>
 <body>
 
@@ -65,6 +263,249 @@
     </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+    // Konfigurace hry
+    const STARTING_BALANCE = 10000;
+    const STARTING_MIN_BET = 500;
+    const BUFF_INCREASE_RATE = 1.5; 
+    const MIN_BET_INCREASE_RATE = 1.01; 
+    const MAX_SLOTS = 6;
+
+    // Výherní pravděpodobnost (Strop 30%)
+    const MAX_WIN_ROLL = 10000; 
+    const BASE_CHANCE = 2000; // Základních 20 %
+    const LUCK_BUFF_VALUE = 200; // +2 % za buff
+    const MAX_LUCK_POINTS = 5; 
+
+    const SYMBOLS = ['💎', '⭐', '🔔', '🍉', '🍊', '🍋', '🍒'];
+
+    let state = {
+        balance: STARTING_BALANCE,
+        minBet: STARTING_MIN_BET,
+        level: 1,
+        slotsCount: 3,
+        luckPoints: 0, 
+        profitMultiplier: 3.0, 
+        prices: { luck: 1000, slots: 2000, profit: 1500 },
+        debt: 3000,
+        timeRemaining: 180 
+    };
+
+    let timerInterval = null;
+
+    const ui = {
+        balance: document.getElementById('balance'),
+        minBet: document.getElementById('minBetDisplay'),
+        level: document.getElementById('level'),
+        betInput: document.getElementById('betInput'),
+        p_luck: document.getElementById('p_luck'),
+        p_slots: document.getElementById('p_slots'),
+        p_profit: document.getElementById('p_profit'),
+        container: document.getElementById('reelContainer'),
+        status: document.getElementById('gameStatus'),
+        spinBtn: document.getElementById('spinBtn'),
+        timer: document.getElementById('timer'),
+        debtAmount: document.getElementById('debtAmount'),
+        jackpotOverlay: document.getElementById('jackpotOverlay')
+    };
+
+    function updateUI() {
+        ui.balance.innerText = Math.floor(state.balance);
+        ui.minBet.innerText = Math.floor(state.minBet);
+        ui.level.innerText = state.level;
+        ui.p_luck.innerText = Math.floor(state.prices.luck);
+        ui.p_slots.innerText = Math.floor(state.prices.slots);
+        ui.p_profit.innerText = Math.floor(state.prices.profit);
+        ui.debtAmount.innerText = Math.floor(state.debt);
+        ui.betInput.min = Math.floor(state.minBet);
+
+        let currentChance = 20 + (state.luckPoints * 2);
+        if (state.luckPoints >= MAX_LUCK_POINTS) {
+            document.getElementById('luckBonusText').innerText = `MAX DOSAŽENO (30%)`;
+            document.getElementById('buffLuck').disabled = true;
+        } else {
+            document.getElementById('luckBonusText').innerText = `Šance +2% (Nyní: ${currentChance}%)`;
+            document.getElementById('buffLuck').disabled = state.balance < state.prices.luck;
+        }
+
+        document.getElementById('buffProfit').disabled = state.balance < state.prices.profit;
+        document.getElementById('buffSlots').disabled = state.balance < state.prices.slots || state.slotsCount >= MAX_SLOTS;
+    }
+
+    function startTimer() {
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            state.timeRemaining--;
+            
+            let minutes = Math.floor(state.timeRemaining / 60);
+            let seconds = state.timeRemaining % 60;
+            ui.timer.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            if (state.timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                checkDebtPayment();
+            }
+        }, 1000);
+    }
+
+    function checkDebtPayment() {
+        if (state.balance >= state.debt) {
+            state.balance -= state.debt;
+            state.level++;
+            
+            state.debt = Math.floor(state.debt * 2.5); 
+            state.timeRemaining = 180 + (state.level * 30); 
+            
+            alert(`Dluh splacen! Postupuješ do Levelu ${state.level}. Nový cíl splátky: ${state.debt} Kč.`);
+            
+            startTimer();
+            updateUI();
+        } else {
+            alert(`Čas vypršel! Nedokázal jsi včas splatit dluh ${state.debt} Kč. BANKROT!`);
+            resetGame();
+        }
+    }
+
+    function renderReels() {
+        ui.container.innerHTML = '';
+        for(let i=0; i<state.slotsCount; i++) {
+            ui.container.innerHTML += `<div class="reel" id="reel-${i}">${SYMBOLS[0]}</div>`;
+        }
+    }
+
+    window.buyBuff = function(type) {
+        if (state.balance >= state.prices[type]) {
+            state.balance -= state.prices[type];
+            state.prices[type] *= BUFF_INCREASE_RATE;
+            
+            if(type === 'luck' && state.luckPoints < MAX_LUCK_POINTS) state.luckPoints++;
+            if(type === 'slots' && state.slotsCount < MAX_SLOTS) { 
+                state.slotsCount++; 
+                renderReels(); 
+            }
+            if(type === 'profit') state.profitMultiplier += 1.0;
+            
+            ui.status.innerText = "Vylepšení zakoupeno!";
+            ui.status.style.color = "#4dffff";
+            updateUI();
+        }
+    }
+
+    function resetGame() {
+        state = {
+            balance: STARTING_BALANCE, minBet: STARTING_MIN_BET, level: 1, slotsCount: 3,
+            luckPoints: 0, profitMultiplier: 3.0, prices: { luck: 1000, slots: 2000, profit: 1500 },
+            debt: 3000, timeRemaining: 180
+        };
+        ui.betInput.value = 500;
+        renderReels();
+        startTimer();
+        updateUI();
+    }
+
+    ui.spinBtn.onclick = () => {
+        let currentBet = parseInt(ui.betInput.value);
+
+        if (isNaN(currentBet) || currentBet < Math.floor(state.minBet)) {
+            alert(`Sázka musí být minimálně ${Math.floor(state.minBet)} Kč!`);
+            return;
+        }
+        if (state.balance < currentBet) {
+            alert("Nemáš dostatek kreditu na tuto sázku!");
+            return;
+        }
+
+        state.balance -= currentBet;
+        state.minBet *= MIN_BET_INCREASE_RATE; 
+        ui.spinBtn.disabled = true;
+        ui.status.innerText = "Točí se...";
+        ui.status.className = "game-status";
+        updateUI();
+
+        const reels = document.querySelectorAll('.reel');
+        reels.forEach(reel => {
+            reel.innerHTML = SYMBOLS.join('<br>');
+            reel.classList.add('spinning');
+        });
+
+        setTimeout(() => {
+            reels.forEach(reel => reel.classList.remove('spinning'));
+
+            const winTarget = BASE_CHANCE + (state.luckPoints * LUCK_BUFF_VALUE); 
+            const roll = Math.floor(Math.random() * MAX_WIN_ROLL);
+            
+            let isWin = roll < winTarget;
+            let isJackpot = false;
+            let resultSymbols = [];
+
+            if (isWin) {
+                let chosenSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                if (Math.random() < 0.15) {
+                    isJackpot = true;
+                    for(let i=0; i<state.slotsCount; i++) resultSymbols.push(chosenSymbol);
+                } else {
+                    for(let i=0; i<3; i++) resultSymbols.push(chosenSymbol);
+                    while(resultSymbols.length < state.slotsCount) {
+                        resultSymbols.push(SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]);
+                    }
+                    resultSymbols.sort(() => Math.random() - 0.5);
+                }
+            } else {
+                let counts = {};
+                while(resultSymbols.length < state.slotsCount) {
+                    let sym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                    if(!counts[sym]) counts[sym] = 0;
+                    if(counts[sym] < 2) {
+                        counts[sym]++;
+                        resultSymbols.push(sym);
+                    }
+                }
+            }
+
+            reels.forEach((reel, index) => {
+                reel.innerText = resultSymbols[index];
+            });
+
+            if (isWin) {
+                let maxMatches = 3;
+                let counts = {};
+                resultSymbols.forEach(s => counts[s] = (counts[s] || 0) + 1);
+                for(let s in counts) {
+                    if(counts[s] > maxMatches) maxMatches = counts[s];
+                }
+
+                if(maxMatches === state.slotsCount) isJackpot = true;
+
+                let totalWin = 0;
+                if (isJackpot) {
+                    totalWin = currentBet * state.profitMultiplier * maxMatches * 5;
+                    state.balance += totalWin;
+                    
+                    ui.jackpotOverlay.classList.remove('hidden');
+                    setTimeout(() => ui.jackpotOverlay.classList.add('hidden'), 2500);
+
+                    ui.status.innerText = "🎉 MEGA JACKPOT: " + Math.floor(totalWin) + " Kč! 🎉";
+                    ui.status.className = "game-status win-msg";
+                } else {
+                    totalWin = currentBet * state.profitMultiplier * (maxMatches * 0.8);
+                    state.balance += totalWin;
+                    ui.status.innerText = `VÝHRA (Shoda ${maxMatches}x): ` + Math.floor(totalWin) + " Kč!";
+                    ui.status.className = "game-status win-msg";
+                }
+            } else {
+                ui.status.innerText = "Žádná shoda. Zkus to znovu!";
+            }
+
+            ui.spinBtn.disabled = false;
+            updateUI();
+
+        }, 1200);
+    };
+
+    renderReels();
+    startTimer();
+    updateUI();
+</script>
+
 </body>
 </html>
