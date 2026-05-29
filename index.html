@@ -3,43 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CloverPit: Balanced Edition</title>
+    <title>CloverPit: The Final Debt</title>
     <style>
-        /* ... (styly zůstávají stejné jako v předchozí verzi) ... */
-        :root { --bg-color: #060609; --panel-color: #0d0d16; --neon-cyan: #00f2fe; --neon-red: #ff2a5f; --neon-green: #39ff14; --text-gold: #ffd700; --font-main: 'Courier New', Courier, monospace; }
-        body { background-color: var(--bg-color); color: #fff; font-family: var(--font-main); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; overflow-x: hidden; user-select: none; }
-        .game-wrapper { background: var(--panel-color); padding: 30px; border-radius: 12px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9); width: 100%; max-width: 800px; border: 1px solid #1f1f35; }
+        :root {
+            --bg-color: #060609;
+            --panel-color: #0d0d16;
+            --neon-cyan: #00f2fe;
+            --neon-red: #ff2a5f;
+            --neon-green: #39ff14;
+            --text-gold: #ffd700;
+            --font-main: 'Courier New', Courier, monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: #fff; 
+            font-family: var(--font-main); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            min-height: 100vh; margin: 0; padding: 20px; overflow-x: hidden; user-select: none;
+        }
+
+        /* CRT šum */
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 999; background-size: 100% 4px, 6px 100%; pointer-events: none;
+        }
+
+        .game-wrapper { 
+            background: var(--panel-color); padding: 30px; border-radius: 12px; 
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 242, 254, 0.05); 
+            width: 100%; max-width: 800px; border: 1px solid #1f1f35; position: relative; z-index: 1;
+        }
+
+        h1 { font-size: 2.5rem; text-transform: uppercase; letter-spacing: 4px; color: #fff; text-shadow: 0 0 15px var(--neon-red); margin: 0 0 5px 0; text-align: center;}
+        
         .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
         .dash-box { background: #050508; border: 1px solid #2a2a44; border-radius: 8px; padding: 15px 10px; text-align: center; }
+        .dash-label { font-size: 0.65rem; color: #888; text-transform: uppercase; margin-bottom: 8px; }
+        .dash-val { font-size: 1.4rem; font-weight: bold; font-family: monospace; }
+        
         .c-red { color: var(--neon-red); } .c-yellow { color: var(--text-gold); } .c-green { color: var(--neon-green); } .c-cyan { color: var(--neon-cyan); }
-        .pay-debt-btn { background: #1a1a2e; border: 1px solid var(--text-gold); color: var(--text-gold); padding: 10px 30px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
+        .pay-debt-container { text-align: center; margin-bottom: 20px; }
+        .pay-debt-btn {
+            background: #1a1a2e; border: 1px solid var(--text-gold); color: var(--text-gold);
+            padding: 10px 30px; border-radius: 5px; cursor: pointer; font-family: var(--font-main);
+            font-weight: bold; transition: 0.2s;
+        }
         .pay-debt-btn:hover:not(:disabled) { background: var(--text-gold); color: #000; }
-        .pay-debt-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .slot-machine { background: #000; border: 2px solid #333; padding: 25px; margin-bottom: 20px; border-radius: 10px; display: flex; justify-content: center; gap: 15px; }
+        .pay-debt-btn:disabled { opacity: 0.3; border-color: #444; cursor: not-allowed; }
+
+        .slot-machine {
+            background: #000; border: 2px solid #333; border-radius: 10px; padding: 25px 15px; margin-bottom: 20px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,1); overflow: hidden; display: flex; justify-content: center; gap: 15px;
+        }
         .reel { width: 80px; height: 100px; background: #111; border: 1px solid #222; font-size: 3.5rem; display: flex; align-items: center; justify-content: center; }
-        .controls { display: flex; gap: 15px; margin-bottom: 25px; height: 70px; }
-        .buy-btn { width: 35%; background: #0a0a12; border: 2px solid #1f1f35; color: var(--text-gold); cursor: pointer; }
-        .spin-btn { flex-grow: 1; background: #990026; color: #fff; border: none; font-size: 1.8rem; font-weight: bold; cursor: pointer; }
+        .reel.spinning { filter: blur(3px); transform: scaleY(1.1); color: transparent; }
+
+        .controls { display: flex; align-items: stretch; gap: 15px; margin-bottom: 25px; height: 70px; }
+        .buy-btn { width: 35%; background: #0a0a12; border: 2px solid #1f1f35; color: var(--text-gold); cursor: pointer; border-radius: 8px; }
+        .spin-btn { flex-grow: 1; background: linear-gradient(to bottom, #ff2a5f, #990026); color: #fff; border: none; border-radius: 8px; font-size: 1.8rem; font-weight: bold; cursor: pointer; }
+        .spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
         .shop { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .upgrade-btn { background: #0c0c14; border: 1px solid #252542; padding: 10px; cursor: pointer; color: #fff; text-align: left; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; }
+        .upgrade-btn { background: #0c0c14; border: 1px solid #252542; padding: 15px; border-radius: 8px; text-align: left; cursor: pointer; color: #fff; }
+        .upgrade-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .upg-cost { color: var(--text-gold); font-family: monospace; }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95);
+            z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+        }
         .overlay.active { opacity: 1; pointer-events: all; }
+        .modal-btn { background: transparent; border: 2px solid #fff; color: #fff; padding: 15px 40px; cursor: pointer; font-family: var(--font-main); }
     </style>
 </head>
 <body>
 
-<div id="gameUI" class="game-wrapper">
-    <div class="header"><h1>CloverPit</h1></div>
+<div id="introScreen" class="overlay active">
+    <div class="modal-content" style="text-align:center;">
+        <div class="modal-title" style="font-size:3rem; margin-bottom:20px;">CLOVERPIT</div>
+        <button class="modal-btn" onclick="Game.init()">VLOŽIT MINCI</button>
+    </div>
+</div>
+
+<div class="game-wrapper">
+    <h1>CloverPit</h1>
     <div class="dashboard">
-        <div class="dash-box"><span style="font-size: 10px;">DLUH</span><br><span id="debtDisplay" class="c-yellow">0</span></div>
-        <div class="dash-box"><span style="font-size: 10px;">ZŮSTATEK</span><br><span id="balanceDisplay" class="c-green">0</span></div>
-        <div class="dash-box"><span style="font-size: 10px;">SPINY</span><br><span id="spinsDisplay" class="c-cyan">0</span></div>
-        <div class="dash-box"><span style="font-size: 10px;">SYMB_LVL</span><br><span id="lvlDisplay" class="c-cyan">1</span></div>
+        <div class="dash-box"><div class="dash-label">Dluh</div><div id="debtDisplay" class="dash-val c-red">0</div></div>
+        <div class="dash-box"><div class="dash-label">Zůstatek</div><div id="balanceDisplay" class="dash-val c-green">0</div></div>
+        <div class="dash-box"><div class="dash-label">Spiny</div><div id="spinsDisplay" class="dash-val c-cyan">0</div></div>
+        <div class="dash-box"><div class="dash-label">Síla (x)</div><div id="multDisplay" class="dash-val c-yellow">1.0</div></div>
     </div>
-    
-    <div style="text-align:center; margin-bottom: 20px;">
-        <button id="payDebtBtn" class="pay-debt-btn" onclick="Game.payDebt()">SPLATIT DLUH</button>
-    </div>
+
+    <div class="pay-debt-container"><button id="payDebtBtn" class="pay-debt-btn" onclick="Game.payDebt()">SPLATIT DLUH</button></div>
 
     <div class="slot-machine" id="reelsContainer"></div>
 
@@ -49,8 +111,12 @@
     </div>
 
     <div class="shop">
-        <button class="upgrade-btn" id="btnLuck" onclick="Game.buyUpgrade('luck')">🍀 Štěstí (Lvl <span id="luckLvl">0</span>)<br><small>+12.5% šance na rare</small></button>
-        <button class="upgrade-btn" id="btnSymMult" onclick="Game.buyUpgrade('symMult')">🔺 Upgrade Symbolů<br><small>+Level po příští splátce</small></button>
+        <button class="upgrade-btn" id="btnLuck" onclick="Game.buyUpgrade('luck')">
+            🍀 <b>Štěstí</b><br><small id="descLuck">Účinnost 1x</small><br><span class="upg-cost" id="costLuck">300 Kč</span>
+        </button>
+        <button class="upgrade-btn" id="btnSymMult" onclick="Game.buyUpgrade('symMult')">
+            🔺 <b>Síla Symbolů (Level)</b><br><small id="descSymMult">Upgrade po splacení</small><br><span class="upg-cost" id="costSymMult">600 Kč</span>
+        </button>
     </div>
 </div>
 
@@ -61,31 +127,34 @@ const Game = (function() {
         { char: '💰', base: 40, weight: 100 }, { char: '7️⃣', base: 80, weight: 70 }, { char: '🔔', base: 150, weight: 40 },
         { char: '💎', base: 300, weight: 15 }
     ];
-    
+
     let state = {
-        debt: 1500,
-        balance: 500,
-        spins: 10,
-        luckLv: 0,
-        symLvl: 1,
-        nextSymLvl: 1, // Čeká na splacení dluhu
-        isSpinning: false
+        debt: 1500, balance: 500, spins: 10, luckLv: 0,
+        symMult: 1.0, // Aktuální aktivní
+        queuedSymMult: 1.0, // Budoucí po splacení
+        isSpinning: false,
+        prices: { luck: 300, symMult: 600 }
     };
 
     function updateUI() {
-        document.getElementById('debtDisplay').textContent = state.debt;
-        document.getElementById('balanceDisplay').textContent = state.balance;
+        document.getElementById('debtDisplay').textContent = state.debt.toLocaleString();
+        document.getElementById('balanceDisplay').textContent = Math.floor(state.balance).toLocaleString();
         document.getElementById('spinsDisplay').textContent = state.spins;
-        document.getElementById('luckLvl').textContent = state.luckLv;
-        document.getElementById('lvlDisplay').textContent = state.symLvl;
+        document.getElementById('multDisplay').textContent = state.symMult.toFixed(1) + 'x';
         document.getElementById('payDebtBtn').disabled = (state.balance < state.debt);
+        document.getElementById('luckLvl').textContent = state.luckLv;
+        
+        document.getElementById('btnLuck').disabled = (state.balance < state.prices.luck);
+        document.getElementById('btnSymMult').disabled = (state.balance < state.prices.symMult);
     }
 
     return {
         init: () => {
+            document.getElementById('introScreen').classList.remove('active');
+            const container = document.getElementById('reelsContainer');
             for(let i=0; i<3; i++) {
                 const r = document.createElement('div'); r.className = 'reel'; r.textContent = '🎰';
-                document.getElementById('reelsContainer').appendChild(r);
+                container.appendChild(r);
             }
             updateUI();
         },
@@ -93,43 +162,57 @@ const Game = (function() {
             if(state.balance >= 100) { state.balance -= 100; state.spins += 6; updateUI(); }
         },
         buyUpgrade: (type) => {
-            if(type === 'luck' && state.balance >= 300 && state.luckLv < 5) {
-                state.balance -= 300; state.luckLv++; updateUI();
-            } else if(type === 'symMult' && state.balance >= 600) {
-                state.balance -= 600; state.nextSymLvl++; alert("Upgrade připraven. Aplikuje se po splacení dluhu.");
+            if(type === 'luck' && state.balance >= state.prices.luck) {
+                state.balance -= state.prices.luck; state.luckLv++; 
+                state.prices.luck = Math.floor(state.prices.luck * 1.5);
+                updateUI();
+            } else if(type === 'symMult' && state.balance >= state.prices.symMult) {
+                state.balance -= state.prices.symMult; 
+                state.queuedSymMult *= 2.0; // Uložíme si to pro příští kolo
+                state.prices.symMult = Math.floor(state.prices.symMult * 2.5);
+                alert("Upgrade zakoupen. Projeví se po splacení dluhu.");
+                updateUI();
             }
         },
         spin: () => {
-            if(state.spins <= 0) return;
+            if(state.spins <= 0 || state.isSpinning) return;
             state.spins--;
+            state.isSpinning = true;
             const reels = document.querySelectorAll('.reel');
-            let totalWin = 0;
             
-            reels.forEach(r => {
-                // Snížená účinnost štěstí (poloviční vliv)
-                let weightMod = state.luckLv * 12.5; 
-                let rnd = Math.random() * (1000 + weightMod);
-                let symbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
-                r.textContent = symbol.char;
-                totalWin += (symbol.base * state.symLvl);
-            });
-            
-            state.balance += totalWin;
-            updateUI();
+            reels.forEach(r => r.classList.add('spinning'));
+
+            setTimeout(() => {
+                let totalWin = 0;
+                reels.forEach(r => {
+                    r.classList.remove('spinning');
+                    // Štěstí je nyní 2x méně účinné (koeficient 12.5 místo 25)
+                    let luckMod = state.luckLv * 12.5; 
+                    let totalWeight = 1000 + luckMod;
+                    let rnd = Math.random() * totalWeight;
+                    
+                    // Jednoduchý výběr symbolu
+                    let symbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                    r.textContent = symbol.char;
+                    totalWin += (symbol.base * state.symMult);
+                });
+                state.balance += totalWin;
+                state.isSpinning = false;
+                updateUI();
+            }, 600);
         },
         payDebt: () => {
             if(state.balance >= state.debt) {
                 state.balance -= state.debt;
-                state.debt = Math.floor(state.debt * 2.5); // Rychlejší nárůst dluhu
-                state.symLvl = state.nextSymLvl; // Zde se teprve aplikuje upgrade
-                alert("Dluh splacen. Automat se upravuje...");
+                state.debt = Math.floor(state.debt * 2.5);
+                // Aplikace Level Upgradu
+                state.symMult = state.queuedSymMult;
+                alert("Dluh splacen! Síla symbolů se zvýšila na " + state.symMult + "x.");
                 updateUI();
             }
         }
     };
 })();
-
-Game.init();
 </script>
 </body>
 </html>
