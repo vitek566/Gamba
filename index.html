@@ -111,18 +111,17 @@
 
         /* Interakce */
         .controls {
-            display: flex; align-items: stretch; gap: 15px; margin-bottom: 25px;
+            display: flex; align-items: stretch; gap: 15px; margin-bottom: 25px; height: 70px;
         }
-        .bet-config {
-            background: #0a0a12; padding: 15px; border-radius: 8px; border: 1px solid #1f1f35;
-            display: flex; flex-direction: column; justify-content: center; width: 30%;
+        
+        .buy-btn {
+            width: 35%; background: #0a0a12; border: 2px solid #1f1f35; border-radius: 8px;
+            color: var(--text-gold); font-family: var(--font-main); font-weight: bold;
+            font-size: 1rem; cursor: pointer; transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .bet-config label { font-size: 0.75rem; color: #888; margin-bottom: 5px; text-transform: uppercase; }
-        .bet-input-wrapper { display: flex; align-items: center; }
-        .bet-input-wrapper input {
-            background: transparent; border: none; color: var(--text-gold); font-size: 1.5rem;
-            font-weight: bold; width: 100%; text-align: left; outline: none; font-family: monospace;
-        }
+        .buy-btn:hover:not(:disabled) { border-color: var(--text-gold); background: #11111a; }
+        .buy-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: #1f1f35; }
         
         .spin-btn {
             flex-grow: 1; background: linear-gradient(to bottom, #ff2a5f, #990026); color: #fff;
@@ -234,8 +233,8 @@
             <span id="balanceDisplay" class="dash-val c-green">0</span>
         </div>
         <div class="dash-box">
-            <span class="dash-label">Min. Sázka (Roste)</span>
-            <span id="minBetDisplay" class="dash-val c-cyan">0</span>
+            <span class="dash-label">Zbývající Spiny</span>
+            <span id="spinsDisplay" class="dash-val c-cyan">0</span>
         </div>
     </div>
 
@@ -244,15 +243,13 @@
             </div>
     </div>
 
-    <div id="statusMessage" class="status-bar c-cyan">Systém připraven. Zadej sázku.</div>
+    <div id="statusMessage" class="status-bar c-cyan">Systém připraven. Kup si spiny.</div>
 
     <div class="controls">
-        <div class="bet-config">
-            <label>Sázka (Kč)</label>
-            <div class="bet-input-wrapper">
-                <input type="number" id="betInput" value="100" min="100">
-            </div>
-        </div>
+        <button id="buySpinsBtn" class="buy-btn" onclick="Game.buySpins()">
+            <span>KOUPIT 6 SPINŮ</span>
+            <span style="font-size: 0.8rem; margin-top: 3px;">(Cena: 100 Kč)</span>
+        </button>
         <button id="spinBtn" class="spin-btn">ZATÁHNOUT</button>
     </div>
 
@@ -276,14 +273,14 @@
                 <span class="upg-name">🔺 Síla Symbolů</span>
                 <span class="upg-cost" id="costSymMult">0</span>
             </div>
-            <div class="upg-desc" id="descSymMult">Základní hodnota všech symbolů se zvýší.</div>
+            <div class="upg-desc" id="descSymMult">Všechny výhry se zdvojnásobí (Základ x2).</div>
         </button>
         <button class="upgrade-btn" id="btnPatMult" onclick="Game.buyUpgrade('patMult')">
             <div class="upg-head">
                 <span class="upg-name">💥 Kombo Bonus</span>
                 <span class="upg-cost" id="costPatMult">0</span>
             </div>
-            <div class="upg-desc" id="descPatMult">Větší násobitel za 3 a více stejných symbolů.</div>
+            <div class="upg-desc" id="descPatMult">Výrazně větší násobič za komba stejných symbolů.</div>
         </button>
     </div>
 </div>
@@ -336,32 +333,32 @@ const AudioEngine = (function() {
  * HERNÍ LOGIKA A STAV
  */
 const Game = (function() {
-    // Číselník symbolů (CloverPit Lore)
+    // Vylepšený číselník symbolů pro spravedlivější výhry
     const SYMBOLS = [
-        { char: '🍋', base: 2, weight: 200 },
-        { char: '🍒', base: 3, weight: 180 },
-        { char: '🍀', base: 4, weight: 150 },
-        { char: '💰', base: 5, weight: 100 },
-        { char: '7️⃣', base: 7, weight: 70 },
-        { char: '🔔', base: 10, weight: 40 },
-        { char: '💎', base: 25, weight: 15 },
-        { char: '6️⃣', base: 66, weight: 5 } // Šestky pro Evil Call
+        { char: '🍋', base: 5, weight: 200 },
+        { char: '🍒', base: 10, weight: 180 },
+        { char: '🍀', base: 20, weight: 150 },
+        { char: '💰', base: 40, weight: 100 },
+        { char: '7️⃣', base: 80, weight: 70 },
+        { char: '🔔', base: 150, weight: 40 },
+        { char: '💎', base: 300, weight: 15 },
+        { char: '6️⃣', base: 666, weight: 5 } // Šestky pro Evil Call
     ];
 
     // Fáze hry
     const SHIFTS = [
-        { level: 1, debt: 1500, time: 180 }, // 3 minuty
+        { level: 1, debt: 1500, time: 180 },
         { level: 2, debt: 10000, time: 180 },
         { level: 3, debt: 75000, time: 180 },
         { level: 4, debt: 250000, time: 180 },
         { level: 5, debt: 1000000, time: 240 } // Konečný dluh
     ];
 
-    // Stavové proměnné
+    // Stavové proměnné (Pevná cena sázky zrušena, upraveny počáteční stavy)
     let state = {
         shiftIdx: 0,
-        balance: 5000,
-        minBet: 100,
+        balance: 500, // Záměrně začínáš s méně penězi pro budování napětí (stačí na 30 spinů)
+        spins: 0,
         timeRemaining: 0,
         slotsCount: 3,
         luckLv: 0,
@@ -369,7 +366,7 @@ const Game = (function() {
         patMult: 1.0,
         isSpinning: false,
         timerId: null,
-        prices: { luck: 500, slot: 2000, symMult: 1000, patMult: 1200 }
+        prices: { luck: 300, slot: 1000, symMult: 600, patMult: 800 }
     };
 
     // DOM Elementy
@@ -379,11 +376,11 @@ const Game = (function() {
         UI.time = document.getElementById('timeDisplay');
         UI.debt = document.getElementById('debtDisplay');
         UI.balance = document.getElementById('balanceDisplay');
-        UI.minBet = document.getElementById('minBetDisplay');
+        UI.spins = document.getElementById('spinsDisplay');
         UI.shift = document.getElementById('shiftDisplay');
-        UI.betInput = document.getElementById('betInput');
         UI.status = document.getElementById('statusMessage');
         UI.reelsContainer = document.getElementById('reelsContainer');
+        UI.buySpinsBtn = document.getElementById('buySpinsBtn');
         UI.spinBtn = document.getElementById('spinBtn');
         
         UI.spinBtn.addEventListener('click', spin);
@@ -407,7 +404,7 @@ const Game = (function() {
         }
         state.shiftIdx = index;
         state.timeRemaining = SHIFTS[index].time;
-        UI.status.textContent = `Fáze ${index + 1} začíná. Zvedni sázky.`;
+        UI.status.textContent = `Fáze ${index + 1} začíná. Nenech čas vypršet.`;
         UI.status.className = "status-bar c-cyan";
         
         clearInterval(state.timerId);
@@ -447,13 +444,12 @@ const Game = (function() {
         
         UI.balance.textContent = Math.floor(state.balance).toLocaleString();
         UI.debt.textContent = curShift.debt.toLocaleString();
-        UI.minBet.textContent = Math.floor(state.minBet).toLocaleString();
+        UI.spins.textContent = state.spins;
         UI.shift.textContent = `FÁZE: ${curShift.level} / ${SHIFTS.length}`;
-        UI.betInput.min = Math.floor(state.minBet);
 
         updateTimeUI();
 
-        // Obchod
+        // Obchod a tlačítka
         document.getElementById('costLuck').textContent = state.luckLv >= 5 ? "MAX" : state.prices.luck.toLocaleString();
         document.getElementById('costSlot').textContent = state.slotsCount >= 6 ? "MAX" : state.prices.slot.toLocaleString();
         document.getElementById('costSymMult').textContent = state.prices.symMult.toLocaleString();
@@ -464,7 +460,8 @@ const Game = (function() {
         document.getElementById('btnSymMult').disabled = (state.balance < state.prices.symMult || state.isSpinning);
         document.getElementById('btnPatMult').disabled = (state.balance < state.prices.patMult || state.isSpinning);
         
-        UI.spinBtn.disabled = state.isSpinning;
+        UI.buySpinsBtn.disabled = (state.balance < 100 || state.isSpinning);
+        UI.spinBtn.disabled = (state.spins <= 0 || state.isSpinning);
     }
 
     function updateTimeUI() {
@@ -485,7 +482,7 @@ const Game = (function() {
 
     function getRandomSymbol() {
         let totalWeight = 0;
-        let luckMod = state.luckLv * 15;
+        let luckMod = state.luckLv * 25; // Zvýšený efekt štěstí
         
         let mapped = SYMBOLS.map(s => {
             let w = s.weight;
@@ -502,26 +499,24 @@ const Game = (function() {
         return mapped[0];
     }
 
+    // Nákup spinů
+    function buySpins() {
+        if (state.balance >= 100 && !state.isSpinning) {
+            state.balance -= 100;
+            state.spins += 6;
+            AudioEngine.spinTick();
+            updateUI();
+            setStatus("Spiny zakoupeny. Můžeš točit.", "c-cyan");
+        }
+    }
+
     // Hlavní točící mechanika
     function spin() {
-        if (state.isSpinning) return;
+        if (state.isSpinning || state.spins <= 0) return;
 
-        let bet = parseInt(UI.betInput.value);
-        if (isNaN(bet) || bet < Math.floor(state.minBet)) {
-            setStatus("Sázka je příliš nízká!", "c-red");
-            AudioEngine.error();
-            return;
-        }
-        if (bet > state.balance) {
-            setStatus("Nedostatek prostředků na kartě!", "c-red");
-            AudioEngine.error();
-            return;
-        }
+        AudioEngine.init();
 
-        AudioEngine.init(); // Pro jistotu
-
-        state.balance -= bet;
-        state.minBet *= 1.02; // Růst sázky o 2%
+        state.spins -= 1;
         state.isSpinning = true;
         updateUI();
         setStatus("Analyzuji pravděpodobnost...", "c-cyan pulse");
@@ -532,10 +527,9 @@ const Game = (function() {
         reelsDOM.forEach((reelEl, index) => {
             reelEl.classList.add('spinning');
             
-            // Promise pro zastavení konkrétního válce
             let p = new Promise(resolve => {
                 let ticks = 0;
-                let maxTicks = 20 + (index * 15); // Každý válec se točí déle
+                let maxTicks = 20 + (index * 15);
                 
                 function animateLoop() {
                     ticks++;
@@ -559,13 +553,12 @@ const Game = (function() {
             stopPromises.push(p);
         });
 
-        // Počkáme až se dotočí všechny válce
         Promise.all(stopPromises).then(results => {
-            processResult(results, bet);
+            processResult(results);
         });
     }
 
-    function processResult(results, bet) {
+    function processResult(results) {
         state.isSpinning = false;
         
         let counts = {};
@@ -574,6 +567,7 @@ const Game = (function() {
 
         results.forEach(sym => {
             counts[sym.char] = (counts[sym.char] || 0) + 1;
+            // Započítáme hodnotu všech padlých symbolů umocněnou na symMult
             totalBaseWin += (sym.base * state.symMult);
             if (sym.char === '6️⃣') sixes++;
         });
@@ -581,23 +575,21 @@ const Game = (function() {
         let maxMatch = Math.max(...Object.values(counts));
         let multiplier = 0;
 
-        // Pokud nemáme ani 2 stejné, nevyhráváme nic (přísná pravidla)
+        // Férové nastavení: Dva stejné symboly znamenají návratnost, větší komba střílí částku do nebes
         if (maxMatch >= 2) {
-            multiplier = Math.pow(1.5, maxMatch - 2) * state.patMult;
+            multiplier = Math.pow(2, maxMatch - 2) * state.patMult;
         } else {
             totalBaseWin = 0; // Prohra
         }
 
-        // Finální výpočet výhry vůči vsazené částce
-        // Matematika: (Base Value * Combo Multiplier) * (Sázka / 100)
-        let finalWin = Math.floor(totalBaseWin * multiplier * (bet / 100));
+        let finalWin = Math.floor(totalBaseWin * multiplier);
 
         if (finalWin > 0) {
             state.balance += finalWin;
             AudioEngine.win();
             setStatus(`Zásah! +${finalWin.toLocaleString()} Kč`, "c-green");
 
-            // Easter Egg / Speciální Událost z CloverPit
+            // Easter Egg / Speciální Událost
             if (sixes >= 3) triggerEvilCall(finalWin);
             
         } else {
@@ -642,25 +634,25 @@ const Game = (function() {
                     break;
                 case 'slot':
                     state.slotsCount++;
-                    state.prices.slot = Math.floor(state.prices.slot * 3);
+                    state.prices.slot = Math.floor(state.prices.slot * 3.5);
                     buildReels();
                     break;
                 case 'symMult':
-                    state.symMult += 0.4;
-                    state.prices.symMult = Math.floor(state.prices.symMult * 1.8);
-                    document.getElementById('descSymMult').textContent = `Základ zvýšen na ${state.symMult.toFixed(1)}x.`;
+                    state.symMult *= 2.0; // Exponenciální růst (potřeba k 1.000.000)
+                    state.prices.symMult = Math.floor(state.prices.symMult * 2.2);
+                    document.getElementById('descSymMult').textContent = `Základ násoben ${state.symMult.toFixed(0)}x.`;
                     break;
                 case 'patMult':
-                    state.patMult += 0.5;
-                    state.prices.patMult = Math.floor(state.prices.patMult * 2.0);
-                    document.getElementById('descPatMult').textContent = `Kombo násobič zvýšen na ${state.patMult.toFixed(1)}x.`;
+                    state.patMult *= 2.0; // Exponenciální růst
+                    state.prices.patMult = Math.floor(state.prices.patMult * 2.5);
+                    document.getElementById('descPatMult').textContent = `Kombo násobič zvýšen na ${state.patMult.toFixed(0)}x.`;
                     break;
             }
             updateUI();
         }
     }
 
-    return { init, buyUpgrade };
+    return { init, buySpins, buyUpgrade };
 })();
 
 </script>
