@@ -3,132 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Casino Pro</title>
+    <title>VIP Slot Machine: Evolution</title>
     <style>
-        body { background-color: #1a1a2e; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .container { background-color: #16213e; padding: 25px; border-radius: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.5); width: 100%; max-width: 600px; text-align: center; }
-        .stats { display: flex; justify-content: space-around; background: #0f3460; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        .slots { display: flex; justify-content: center; gap: 15px; font-size: 3rem; background: #000; padding: 30px; border-radius: 15px; margin-bottom: 20px; border: 2px solid #e94560; }
-        .reel { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: #fff; color: #000; border-radius: 8px; }
-        .buffs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
-        button { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        #spinBtn { width: 100%; background-color: #e94560; color: white; font-size: 1.5rem; margin-bottom: 20px; }
-        #spinBtn:hover { background-color: #ff5c77; }
-        .buff-btn { background-color: #0f3460; color: #fff; font-size: 0.8rem; }
-        .buff-btn:hover { background-color: #4dffff; color: #000; }
-        .message { height: 30px; font-weight: bold; margin-bottom: 10px; color: #4dffff; }
+        body { background: #10101a; color: #fff; font-family: 'Segoe UI', system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .main-container { background: #161625; padding: 30px; border-radius: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.7), inset 0 0 15px rgba(233, 69, 96, 0.2); width: 100%; max-width: 650px; text-align: center; border: 1px solid #333; }
+        h1 { font-size: 2.2rem; text-transform: uppercase; letter-spacing: 2px; color: #fff; text-shadow: 0 0 10px #e94560, 0 0 20px #e94560; margin-top: 0; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; background: #1a1a2e; padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #333; }
+        .stat-box { font-size: 0.9rem; color: #aaa; }
+        .stat-val { font-size: 1.4rem; color: #fff; font-weight: bold; }
+        .stat-balance .stat-val { color: #ffd700; text-shadow: 0 0 5px rgba(255,215,0,0.5); }
+        .stat-level .stat-val { color: #4dffff; }
+
+        /* Styl automatu s vizuálním "oknem" pro točení */
+        .slot-machine { background: #000; border: 4px solid #e94560; border-radius: 15px; padding: 15px; margin-bottom: 25px; box-shadow: 0 0 15px rgba(233, 69, 96, 0.5), inset 0 0 10px rgba(0,0,0,0.8); }
+        .reel-container { display: flex; justify-content: center; gap: 10px; height: 100px; /* Pevná výška */ overflow: hidden; /* Důležité pro skrytí rotujícího textu */ border-radius: 8px; background: #fff; color: #000; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
+        .reel { width: 70px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; /* Zarovnání na začátek pro animaci */ font-size: 3.5rem; line-height: 100px; /* Stejná jako výška okna */ position: relative; top: 0; }
+
+        /* Klíčové animace pro točení */
+        @keyframes spinAnimation { 0% { top: 0; } 100% { top: -600px; /* Odpovídá 6 symbolům po 100px */ } }
+        .spinning { animation: spinAnimation 0.1s linear infinite; }
+
+        button { text-transform: uppercase; font-weight: bold; cursor: pointer; transition: 0.2s ease-in-out; }
+        button:disabled { cursor: not-allowed; opacity: 0.6; }
+
+        #spinBtn { width: 100%; background: linear-gradient(135deg, #e94560 0%, #a31d3e 100%); color: white; padding: 18px; border: none; border-radius: 8px; font-size: 1.6rem; margin-bottom: 25px; box-shadow: 0 5px 0 #7e1630; border-bottom: 1px solid rgba(0,0,0,0.3); }
+        #spinBtn:hover:not(:disabled) { background: linear-gradient(135deg, #ff5c77 0%, #e94560 100%); }
+        #spinBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 #7e1630; }
+
+        .buffs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .buff-btn { background: #1a1a2e; color: #fff; border: 1px solid #e94560; padding: 12px 5px; border-radius: 8px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 5px; }
+        .buff-btn:hover:not(:disabled) { background: #e94560; border-color: #ff5c77; box-shadow: 0 0 10px rgba(233,69,96,0.3); }
+        .buff-price { color: #ffd700; font-size: 0.9rem; }
+        .buff-level { color: #4dffff; font-size: 0.7rem; text-transform: none; }
+
+        .game-status { height: 30px; font-weight: bold; margin-bottom: 15px; color: #ccc; }
+        .win-msg { color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,0.6); animation: winPulse 0.5s infinite alternate; }
+        @keyframes winPulse { from { transform: scale(1); } to { transform: scale(1.05); } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🎰 VIP SLOT MACHINE</h1>
+<div class="main-container">
+    <h1>Slots Evolution</h1>
     
     <div class="stats">
-        <div>Kredit: <br><span id="balance">10000</span> Kč</div>
-        <div>Sázka: <br><span id="betPrice">500</span> Kč</div>
-        <div>Level: <br><span id="level">1</span></div>
+        <div class="stat-box stat-balance">Kredit<br><span id="balance" class="stat-val">10000</span> Kč</div>
+        <div class="stat-box">Sázka<br><span id="betPrice" class="stat-val">500</span> Kč</div>
+        <div class="stat-box stat-level">Level<br><span id="level" class="stat-val">1</span></div>
     </div>
 
-    <div class="slots" id="reelContainer">
-        <div class="reel">🍒</div><div class="reel">🍒</div><div class="reel">🍒</div>
+    <div class="slot-machine">
+        <div class="reel-container" id="reelContainer">
+            </div>
     </div>
 
-    <div id="message" class="message">Hodně štěstí!</div>
-    <button id="spinBtn">ZATOČIT</button>
+    <div id="gameStatus" class="game-status">Vítejte, zkusíte štěstí?</div>
+    <button id="spinBtn">Zatočit</button>
 
     <div class="buffs">
-        <button class="buff-btn" onclick="buyBuff('luck')">Štěstí<br><span id="p_luck">1000</span> Kč</button>
-        <button class="buff-btn" onclick="buyBuff('slots')">Více slotů<br><span id="p_slots">2000</span> Kč</button>
-        <button class="buff-btn" onclick="buyBuff('profit')">Zisk (+1)<br><span id="p_profit">1500</span> Kč</button>
+        <button class="buff-btn" id="buffLuck" onclick="buyBuff('luck')">
+            Zvýšit Štěstí
+            <span class="buff-price"><span id="p_luck">1000</span> Kč</span>
+            <span class="buff-level">Šance +5%</span>
+        </button>
+        <button class="buff-btn" id="buffSlots" onclick="buyBuff('slots')">
+            +1 Nový Slot
+            <span class="buff-price"><span id="p_slots">2000</span> Kč</span>
+            <span class="buff-level">Max 6 slotů</span>
+        </button>
+        <button class="buff-btn" id="buffProfit" onclick="buyBuff('profit')">
+            Zvýšit Násobitel
+            <span class="buff-price"><span id="p_profit">1500</span> Kč</span>
+            <span class="buff-level">Zisk +1.0x</span>
+        </button>
     </div>
 </div>
 
 <script>
+    // Konfigurace a výchozí stav
+    const STARTING_BALANCE = 10000;
+    const STARTING_BET = 500;
+    const BUFF_INCREASE_RATE = 1.5; // Dražší o 50%
+    const BET_INCREASE_RATE = 1.01; // Zdražení točky o 1%
+    const MAX_SLOTS = 6;
+    
+    // Základní výherní šance (neupravené štěstím)
+    const MAX_WIN_ROLL = 10000; // Počítáme s šancí z 10000
+
+    // Symboly v automatu. Pořadí ovlivňuje výherní logiku (viz vysvětlení).
+    const SYMBOLS = ['💎', '⭐', '🔔', '🍉', '🍊', '🍋', '🍒'];
+
+    // Hlavní stav hry
     let state = {
-        balance: 10000,
-        bet: 500,
+        balance: STARTING_BALANCE,
+        bet: STARTING_BET,
         level: 1,
         slotsCount: 3,
-        luck: 0,
-        profitBonus: 0,
+        luckPoints: 0, // Každý bod přidává 5% k šanci
+        profitMultiplier: 3, // Základní násobitel výhry (např. 3x sázka)
         prices: { luck: 1000, slots: 2000, profit: 1500 }
     };
 
-    const symbols = ['🍒', '🍋', '🍊', '🍉', '⭐', '💎', '🔔'];
+    const ui = {
+        balance: document.getElementById('balance'),
+        bet: document.getElementById('betPrice'),
+        level: document.getElementById('level'),
+        p_luck: document.getElementById('p_luck'),
+        p_slots: document.getElementById('p_slots'),
+        p_profit: document.getElementById('p_profit'),
+        container: document.getElementById('reelContainer'),
+        status: document.getElementById('gameStatus'),
+        spinBtn: document.getElementById('spinBtn')
+    };
 
+    // Funkce pro aktualizaci rozhraní
     function updateUI() {
-        document.getElementById('balance').innerText = Math.floor(state.balance);
-        document.getElementById('betPrice').innerText = Math.floor(state.bet);
-        document.getElementById('level').innerText = state.level;
-        for(let key in state.prices) {
-            document.getElementById('p_'+key).innerText = Math.floor(state.prices[key]);
+        ui.balance.innerText = Math.floor(state.balance);
+        ui.bet.innerText = Math.floor(state.bet);
+        ui.level.innerText = state.level;
+        ui.p_luck.innerText = Math.floor(state.prices.luck);
+        ui.p_slots.innerText = Math.floor(state.prices.slots);
+        ui.p_profit.innerText = Math.floor(state.prices.profit);
+
+        // Deaktivace tlačítek při nedostatku peněz nebo max levelu slotů
+        document.getElementById('buffLuck').disabled = state.balance < state.prices.luck;
+        document.getElementById('buffProfit').disabled = state.balance < state.prices.profit;
+        document.getElementById('buffSlots').disabled = state.balance < state.prices.slots || state.slotsCount >= MAX_SLOTS;
+    }
+
+    // Inicializace válců s efektem roztočeného textu
+    function renderReels() {
+        ui.container.innerHTML = '';
+        const spinText = SYMBOLS.join('<br>'); // Text pro animaci
+        for(let i=0; i<state.slotsCount; i++) {
+            ui.container.innerHTML += `<div class="reel" id="reel-${i}">${SYMBOLS[0]}</div>`;
         }
     }
 
+    // Logika nákupu buffů
     function buyBuff(type) {
         if (state.balance >= state.prices[type]) {
             state.balance -= state.prices[type];
-            state.prices[type] *= 1.5; // Zvýšení ceny buffu o 50%
+            state.prices[type] *= BUFF_INCREASE_RATE;
             
-            if(type === 'luck') state.luck += 5;
-            if(type === 'slots') { 
+            if(type === 'luck') state.luckPoints++;
+            if(type === 'slots' && state.slotsCount < MAX_SLOTS) { 
                 state.slotsCount++; 
                 renderReels(); 
             }
-            if(type === 'profit') state.profitBonus += 1;
+            if(type === 'profit') state.profitMultiplier += 1.0;
             
+            ui.status.innerText = "Vylepšení zakoupeno!";
+            ui.status.style.color = "#4dffff";
             updateUI();
-        } else {
-            alert("Nedostatek kreditu!");
         }
     }
 
-    function renderReels() {
-        const container = document.getElementById('reelContainer');
-        container.innerHTML = '';
-        for(let i=0; i<state.slotsCount; i++) {
-            container.innerHTML += '<div class="reel">🍒</div>';
-        }
-    }
-
-    document.getElementById('spinBtn').onclick = () => {
-        if (state.balance < state.bet) {
-            alert("GAME OVER! Začínáš od začátku.");
-            state = { balance: 10000, bet: 500, level: 1, slotsCount: 3, luck: 0, profitBonus: 0, prices: { luck: 1000, slots: 2000, profit: 1500 }};
-            renderReels();
-        } else {
-            state.balance -= state.bet;
-            state.bet *= 1.01; // Zdražení točky o 1%
-            
-            let results = [];
-            for(let i=0; i<state.slotsCount; i++) {
-                // Štěstí snižuje náhodu (posouvá výběr symbolů k těm "lepším")
-                let randomIndex = Math.floor(Math.random() * (symbols.length - Math.min(state.luck / 10, 5)));
-                results.push(symbols[randomIndex]);
-            }
-            
-            const reels = document.querySelectorAll('.reel');
-            results.forEach((s, i) => reels[i].innerText = s);
-
-            // Vyhodnocení výhry
-            let isWin = results.every(val => val === results[0]);
-            if (isWin) {
-                let win = state.bet * (3 + state.profitBonus);
-                state.balance += win;
-                document.getElementById('message').innerText = "VÝHRA: " + Math.floor(win) + " Kč!";
-            } else {
-                document.getElementById('message').innerText = "Zkus to znovu!";
-            }
-        }
-        state.level = Math.floor(state.balance / 5000) + 1;
+    // Vyresetování hry při prohře
+    function gameOver() {
+        alert("GAME OVER! Kredit klesl pod cenu sázky. Začínáme znovu.");
+        state = {
+            balance: STARTING_BALANCE, bet: STARTING_BET, level: 1, slotsCount: 3,
+            luckPoints: 0, profitMultiplier: 3, prices: { luck: 1000, slots: 2000, profit: 1500 }
+        };
+        renderReels();
+        ui.status.innerText = "Nová hra! Přejeme hodně štěstí.";
+        ui.status.style.color = "#ccc";
         updateUI();
+    }
+
+    // Hlavní funkce pro točení
+    ui.spinBtn.onclick = () => {
+        if (state.balance < state.bet) {
+            gameOver();
+            return;
+        }
+
+        // Odečtení sázky, zvýšení její ceny a uzamčení tlačítka
+        state.balance -= state.bet;
+        state.bet *= BET_INCREASE_RATE;
+        ui.spinBtn.disabled = true;
+        ui.status.innerText = "Točí se...";
+        ui.status.className = "game-status";
+        updateUI();
+
+        // Spuštění animace točení na všech válcích
+        const reels = document.querySelectorAll('.reel');
+        reels.forEach(reel => {
+            reel.innerHTML = SYMBOLS.join('<br>'); // Naplnění pro efekt točení
+            reel.classList.add('spinning'); // Přidání CSS animace
+        });
+
+        // Simulace doby točení
+        setTimeout(() => {
+            // Zastavení animace a výpočet výsledků
+            let isWin = false;
+            let currentProfitMult = state.profitMultiplier;
+
+            reels.forEach(reel => {
+                reel.classList.remove('spinning');
+            });
+
+            // --- Logika výhry s malou šancí a vlivem štěstí ---
+            // 1. Vypočítáme cílové číslo pro výhru (v základu je malá šance: 1%)
+            // Každý bod štěstí přidává 500 (5% z 10000)
+            const baseChance = 100; // 1%
+            const winTarget = baseChance + (state.luckPoints * 500); 
+
+            // 2. Hodíme kostkou (náhodné číslo 0 - 9999)
+            const roll = Math.floor(Math.random() * MAX_WIN_ROLL);
+
+            let winningSymbol = '';
+            
+            if (roll < winTarget) {
+                // Výhra! Všechny sloty budou stejné.
+                isWin = true;
+                // Vybereme náhodný symbol, na kterém se zastaví (všechny stejné)
+                winningSymbol = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                reels.forEach(reel => reel.innerText = winningSymbol);
+            } else {
+                // Prohra. Válce zastavíme na náhodných (a pravděpodobně různých) symbolech.
+                reels.forEach(reel => {
+                    const randomSym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                    reel.innerText = randomSym;
+                });
+            }
+            // ----------------------------------------------------
+
+            if (isWin) {
+                // Výpočet zisku: Základní násobitel * bonus ze slotů
+                // Bonus slotů: čím více slotů, tím těžší je výhra, takže vyšší odměna (např. 3 sloty = 1x, 6 slotů = 1.6x)
+                let slotBonus = 1 + ((state.slotsCount - 3) * 0.2); 
+                let totalWin = state.bet * currentProfitMult * slotBonus;
+                state.balance += totalWin;
+                ui.status.innerText = "VÝHRA: " + Math.floor(totalWin) + " Kč!";
+                ui.status.className = "game-status win-msg";
+            } else {
+                ui.status.innerText = "Nic nepadlo. Zkusíte to znovu?";
+            }
+
+            // Aktualizace levelu (za každých 10k zisku jeden level)
+            state.level = Math.floor(state.balance / 10000) + 1;
+            ui.spinBtn.disabled = false;
+            updateUI();
+
+        }, 1200); // Trvání točení v milisekundách
     };
 
+    // Inicializace
+    renderReels();
     updateUI();
 </script>
 
-</body>
-</html>
 </body>
 </html>
