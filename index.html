@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CloverPit: Meme Edition (Balanced)</title>
+    <title>CloverPit: The Ultimate Progression</title>
     <style>
         :root {
             --bg-color: #030306;
@@ -33,7 +33,7 @@
             position: relative;
         }
 
-        /* Pokročilý CRT a Scanline filtr pokrývající celou obrazovku */
+        /* Pokročilý CRT a Scanline filtr */
         body::before {
             content: " ";
             display: block;
@@ -59,12 +59,46 @@
         .shake-animation {
             animation: screenShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
         }
+        .shake-hard {
+            animation: screenShakeHard 0.6s cubic-bezier(.36,.07,.19,.97) both;
+        }
 
         @keyframes screenShake {
             10%, 90% { transform: translate3d(-2px, 0, 0); }
             20%, 80% { transform: translate3d(3px, -2px, 0); }
             30%, 50%, 70% { transform: translate3d(-5px, 4px, 0); }
             40%, 60% { transform: translate3d(5px, -2px, 0); }
+        }
+
+        @keyframes screenShakeHard {
+            10%, 90% { transform: translate3d(-5px, -3px, 0); }
+            20%, 80% { transform: translate3d(6px, 5px, 0); }
+            30%, 50%, 70% { transform: translate3d(-10px, 8px, 0); }
+            40%, 60% { transform: translate3d(10px, -6px, 0); }
+        }
+
+        /* JACKPOT ANIMACE */
+        .jackpot-anim-container {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            font-size: 6rem; font-weight: 900; color: var(--text-gold);
+            text-shadow: 0 0 30px var(--text-gold), 0 0 60px var(--neon-red), 0 0 100px #fff;
+            pointer-events: none; z-index: 100001;
+            text-transform: uppercase; letter-spacing: 15px; white-space: nowrap;
+            opacity: 0;
+        }
+
+        .jackpot-anim-container.fire {
+            animation: jackpotPop 1.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes jackpotPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            15% { transform: translate(-50%, -50%) scale(1.3) rotate(-5deg); opacity: 1; filter: hue-rotate(0deg); }
+            30% { transform: translate(-50%, -50%) scale(1) rotate(5deg); filter: hue-rotate(90deg); }
+            45% { transform: translate(-50%, -50%) scale(1.2) rotate(-3deg); filter: hue-rotate(180deg); }
+            60% { transform: translate(-50%, -50%) scale(1.1) rotate(3deg); filter: hue-rotate(270deg); }
+            80% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; filter: hue-rotate(360deg); }
+            100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
         }
 
         .game-wrapper { 
@@ -260,30 +294,37 @@
 
 <canvas id="particleCanvas"></canvas>
 
+<!-- Element pro animaci Jackpotu -->
+<div id="jackpotAnim" class="jackpot-anim-container">JACKPOT!</div>
+
+<!-- Úvodní obrazovka -->
 <div id="introScreen" class="overlay active">
     <div class="modal-content" style="border-color: var(--neon-cyan);">
-        <div id="introTitle" class="modal-title c-cyan">CLOVERPIT: RE-BALANCED</div>
-        <div class="modal-text">Jsi uzamčen. Oproti minule je systém trochu vstřícnější. Máš pohodlných <strong>20 spinů</strong> na fázi a všechny upgrady jsou o 50 % levnější. Připrav si ale ty mp3!</div>
+        <div id="introTitle" class="modal-title c-cyan" style="font-size: 2.8rem;">CLOVERPIT: EVOLUTION</div>
+        <div class="modal-text">Začínáme zlehka, ale čeká tě celkem 7 fází. Splátky jdou postupně od malých drobných až do naprostého extrému. Máš dost štěstí na to přežít 20 milionů?</div>
         <button class="modal-btn" onclick="Game.init()">Spustit Systém</button>
     </div>
 </div>
 
+<!-- Obrazovka Vítězství -->
 <div id="victoryScreen" class="overlay">
     <div class="modal-content" style="border-color: var(--neon-green);">
         <div class="modal-title c-green">DEBT PAID</div>
-        <div class="modal-text">Nemožné se stalo skutečností. Všechny masivní dluhy byly uhrazeny. Jsi volný.</div>
+        <div class="modal-text">Podařilo se ti to. Systém tě pustil. Konečný dluh splacen.</div>
         <button class="modal-btn" onclick="location.reload()">Resetovat Terminál</button>
     </div>
 </div>
 
+<!-- Obrazovka Prohry -->
 <div id="deathScreen" class="overlay">
     <div class="modal-content" style="border-color: var(--neon-red);">
         <div class="modal-title c-red glitch">LIQUIDACE</div>
-        <div class="modal-text">20 spinů uběhlo a peníze chybí. Tvůj bankrot je definitivní.</div>
+        <div class="modal-text">Spiny uběhly a peníze chybí. Tvůj bankrot je definitivní.</div>
         <button class="modal-btn" onclick="location.reload()">Zkusit znovu</button>
     </div>
 </div>
 
+<!-- Okno pro hazardní hru -->
 <div id="gambleScreen" class="overlay">
     <div class="modal-content" style="border-color: var(--neon-purple);">
         <div class="modal-title c-cyan" style="font-size: 2.5rem; text-shadow: 0 0 15px var(--neon-purple);">DOUBLE OR NOTHING</div>
@@ -299,13 +340,13 @@
 <div class="game-wrapper" id="gameMainWrapper">
     <div class="header">
         <h1>CloverPit</h1>
-        <div class="subtitle" id="shiftDisplay">Směna: 1 / 5</div>
+        <div class="subtitle" id="shiftDisplay">Směna: 1 / 7</div>
     </div>
 
     <div class="dashboard">
         <div class="dash-box highlight">
             <span class="dash-label">Spiny do exekuce</span>
-            <span id="debtSpinsDisplay" class="dash-val c-red pulse">20</span>
+            <span id="debtSpinsDisplay" class="dash-val c-red pulse">25</span>
         </div>
         <div class="dash-box">
             <span class="dash-label">Požadovaný Dluh</span>
@@ -336,7 +377,7 @@
     <div class="controls">
         <button id="buySpinsBtn" class="buy-btn" onclick="Game.buySpins()">
             <span>KOUPIT 6 SPINŮ</span>
-            <span style="font-size: 0.75rem; margin-top: 4px; color: #888;">Cena: 150 Kč</span>
+            <span style="font-size: 0.75rem; margin-top: 4px; color: #888;">Cena: 100 Kč</span>
         </button>
         <button id="spinBtn" class="spin-btn">ZATÁHNOUT</button>
     </div>
@@ -347,7 +388,7 @@
                 <span class="upg-name">🍀 Zvýšit Štěstí</span>
                 <span class="upg-cost" id="costLuck">0 Kč</span>
             </div>
-            <div class="upg-desc">Mírně zvyšuje výskyt vzácných symbolů.</div>
+            <div class="upg-desc">Zvyšuje šanci na výskyt vzácných symbolů.</div>
         </button>
         <button class="upgrade-btn" id="btnSlot" onclick="Game.buyUpgrade('slot')">
             <div class="upg-head">
@@ -358,17 +399,17 @@
         </button>
         <button class="upgrade-btn" id="btnSymMult" disabled>
             <div class="upg-head">
-                <span class="upg-name">🔺 Multiplikátor Symbolů</span>
+                <span class="upg-name">🔺 Síla Fáze</span>
                 <span class="upg-cost">AUTOMATICKY</span>
             </div>
-            <div class="upg-desc">Síla a základní hodnoty symbolů rostou s každou další fází dluhu.</div>
+            <div class="upg-desc">Základní výplaty markantně rostou s postupem do těžších fází.</div>
         </button>
         <button class="upgrade-btn" id="btnPatMult" onclick="Game.buyUpgrade('patMult')">
             <div class="upg-head">
                 <span class="upg-name">💥 Kombo Výkon</span>
                 <span class="upg-cost" id="costPatMult">0 Kč</span>
             </div>
-            <div class="upg-desc">Zvyšuje exponenciální násobič za shodu 3 a více symbolů.</div>
+            <div class="upg-desc">Zvyšuje exponenciální násobič za shodné symboly.</div>
         </button>
     </div>
 </div>
@@ -382,15 +423,15 @@ const Mp3Player = {
 
     playLoss: function() {
         this.awDangIt.currentTime = 0;
-        this.awDangIt.play().catch(e => console.log("Audio play blocked by browser."));
+        this.awDangIt.play().catch(e => console.log("Audio play blocked"));
     },
     playBigWin: function() {
         this.finResponsible.currentTime = 0;
-        this.finResponsible.play().catch(e => console.log("Audio play blocked by browser."));
+        this.finResponsible.play().catch(e => console.log("Audio play blocked"));
     },
     playJackpot: function() {
         this.jackpot.currentTime = 0;
-        this.jackpot.play().catch(e => console.log("Audio play blocked by browser."));
+        this.jackpot.play().catch(e => console.log("Audio play blocked"));
     },
     stopAll: function() {
         this.jackpot.pause(); this.jackpot.currentTime = 0;
@@ -443,13 +484,13 @@ const ParticleEngine = (function() {
         for (let i = 0; i < count; i++) {
             particles.push({
                 x: x, y: y,
-                vx: (Math.random() - 0.5) * 14,
-                vy: (Math.random() - 0.7) * 16 - 3,
-                gravity: 0.5,
-                radius: Math.random() * 5 + 3,
+                vx: (Math.random() - 0.5) * 16,
+                vy: (Math.random() - 0.7) * 20 - 4,
+                gravity: 0.6,
+                radius: Math.random() * 6 + 3,
                 color: type === 'gold' ? '#ffd700' : '#00f2fe',
                 alpha: 1,
-                decay: Math.random() * 0.02 + 0.015,
+                decay: Math.random() * 0.02 + 0.01,
                 isCoin: type === 'gold'
             });
         }
@@ -472,7 +513,7 @@ const ParticleEngine = (function() {
     return { init, spawnExplosion };
 })();
 
-// HERNI LOGIKA
+// HERNI LOGIKA S NOVOU KŘIVKOU
 const Game = (function() {
     const SYMBOLS = [
         { char: '🍋', base: 10, weight: 250 }, 
@@ -485,26 +526,31 @@ const Game = (function() {
         { char: '🔥', base: 1000, weight: 2 }    
     ];
 
+    // 7 FÁZÍ S NOVOU KŘIVKOU OBTÍŽNOSTI (Spiny postupně klesají z 25 na 15)
     const SHIFTS = [
-        { level: 1, debt: 1500 }, 
-        { level: 2, debt: 8500 },
-        { level: 3, debt: 45000 }, 
-        { level: 4, debt: 200000 },
-        { level: 5, debt: 1000000 }
+        { level: 1, debt: 1000, spins: 25 },
+        { level: 2, debt: 5000, spins: 25 },
+        { level: 3, debt: 50000, spins: 20 },
+        { level: 4, debt: 1000000, spins: 20 },
+        { level: 5, debt: 5000000, spins: 15 },
+        { level: 6, debt: 20000000, spins: 15 },
+        { level: 7, debt: 1000000, spins: 15 } // Finální easter-egg/oddych po brutálním milníku
     ];
-    const SYMBOL_LEVEL_MULTS = [1.0, 1.3, 1.8, 2.5, 4.0];
+    
+    // Obrovská eskalace násobičů, aby šlo 20M v 6. fázi vůbec uhrát
+    const SYMBOL_LEVEL_MULTS = [1.0, 2.0, 4.0, 15.0, 35.0, 80.0, 150.0];
 
     let state = { 
         shiftIdx: 0, 
-        balance: 400, 
+        balance: 800, // ZAČÁTEK JE LEHKÝ
         spins: 0, 
-        debtSpinsRemaining: 20, // ZMENA NA 20 SPINŮ
+        debtSpinsRemaining: 25, 
         slotsCount: 3, 
         luckLv: 0, 
         symMult: 1.0, 
         patMult: 1.0, 
         isSpinning: false, 
-        prices: { luck: 200, slot: 600, patMult: 400 }, // ZMENA: UPGRADY O 50% LEVNĚJŠÍ
+        prices: { luck: 150, slot: 400, patMult: 300 }, // ZAČÁTEČNICKÉ LEVNÉ UPGRADY
         lastSpinResult: [],
         pendingWinAmount: 0
     };
@@ -524,6 +570,7 @@ const Game = (function() {
         UI.payDebtBtn = document.getElementById('payDebtBtn');
         UI.terminal = document.getElementById('systemTerminal');
         UI.wrapper = document.getElementById('gameMainWrapper');
+        UI.jackpotAnim = document.getElementById('jackpotAnim');
         
         UI.spinBtn.addEventListener('click', runSpinCycle);
     }
@@ -533,7 +580,7 @@ const Game = (function() {
         ParticleEngine.init();
         initDOM(); 
         document.getElementById('introScreen').classList.remove('active'); 
-        logTerminal("Inicializace odlehčeného jádra...", "success");
+        logTerminal("Evolution mód spuštěn. Načítání 7 fází.", "success");
         loadShift(0); 
         buildReelsStructure(); 
         updateUI(); 
@@ -551,16 +598,16 @@ const Game = (function() {
 
     function loadShift(index) {
         if (index >= SHIFTS.length) { 
-            logTerminal("KONEČNÝ DLUH ZLIKVIDOVÁN! SYSTÉM JE VOLNÝ.", "success");
+            logTerminal("VŠECHNY FÁZE DOKONČENY. JSI ABSOLUTNÍ BOHÁČ.", "success");
             document.getElementById('victoryScreen').classList.add('active'); 
             Mp3Player.stopAll();
             return; 
         }
         state.shiftIdx = index;
         state.symMult = SYMBOL_LEVEL_MULTS[index];
-        state.debtSpinsRemaining = 20; // 20 spinů per fáze
+        state.debtSpinsRemaining = SHIFTS[index].spins; 
         
-        logTerminal(`Spuštěna fáze ${SHIFTS[index].level}. Cílový dluh: ${SHIFTS[index].debt} Kč do 20 spinů.`, "alert");
+        logTerminal(`Spuštěna směna ${SHIFTS[index].level}. Cílový dluh: ${SHIFTS[index].debt.toLocaleString()} Kč. Spiny do exekuce: ${SHIFTS[index].spins}`, "alert");
         updateUI(); 
     }
     
@@ -568,13 +615,13 @@ const Game = (function() {
         let currentDebt = SHIFTS[state.shiftIdx].debt;
         if (state.balance >= currentDebt && !state.isSpinning) {
             state.balance -= currentDebt;
-            logTerminal(`Splátka dluhu ve výši ${currentDebt} Kč byla úspěšně uhrazena.`, "success");
+            logTerminal(`Dluh ${currentDebt.toLocaleString()} Kč uhrazen!`, "success");
             
             Mp3Player.stopAll();
-            Mp3Player.playJackpot();
+            Mp3Player.playBigWin(); // Pustíme na splacení něco pozitivního
             
             const rect = UI.debt.getBoundingClientRect();
-            ParticleEngine.spawnExplosion(rect.left + rect.width/2, rect.top + rect.height/2, 60, 'cyan');
+            ParticleEngine.spawnExplosion(rect.left + rect.width/2, rect.top + rect.height/2, 80, 'cyan');
 
             loadShift(state.shiftIdx + 1);
         }
@@ -599,7 +646,7 @@ const Game = (function() {
         UI.shift.textContent = `SMĚNA: ${curShift.level} / ${SHIFTS.length}`;
         UI.debtSpins.textContent = state.debtSpinsRemaining;
         
-        if(state.debtSpinsRemaining <= 3) UI.debtSpins.className = "dash-val c-red glitch";
+        if(state.debtSpinsRemaining <= 4) UI.debtSpins.className = "dash-val c-red glitch";
         else UI.debtSpins.className = "dash-val c-red pulse";
         
         UI.payDebtBtn.disabled = (state.balance < curShift.debt || state.isSpinning);
@@ -612,7 +659,7 @@ const Game = (function() {
         document.getElementById('btnSlot').disabled = (state.balance < state.prices.slot || state.slotsCount >= 6 || state.isSpinning);
         document.getElementById('btnPatMult').disabled = (state.balance < state.prices.patMult || state.isSpinning);
         
-        UI.buySpinsBtn.disabled = (state.balance < 150 || state.isSpinning); 
+        UI.buySpinsBtn.disabled = (state.balance < 100 || state.isSpinning); // Fixní levná cena spinů
         UI.spinBtn.disabled = (state.spins <= 0 || state.isSpinning || state.debtSpinsRemaining <= 0);
     }
 
@@ -629,11 +676,11 @@ const Game = (function() {
 
     function pullRandomSymbolCalculated() { 
         let totalWeight = 0; 
-        let luckModifier = state.luckLv * 12; 
+        let luckModifier = state.luckLv * 15; 
         
         let mapped = SYMBOLS.map(s => { 
             let w = s.weight; 
-            if (s.weight < 50) w += luckModifier; 
+            if (s.weight < 60) w += luckModifier; 
             totalWeight += w; 
             return { ...s, w }; 
         }); 
@@ -647,11 +694,11 @@ const Game = (function() {
     }
 
     function buySpins() { 
-        if (state.balance >= 150 && !state.isSpinning) { 
-            state.balance -= 150; 
+        if (state.balance >= 100 && !state.isSpinning) { 
+            state.balance -= 100; 
             state.spins += 6; 
             AudioEngine.spinTick(); 
-            logTerminal("Zakoupen balíček 6 aktivních spinů (-150 Kč)", "");
+            logTerminal("Zakoupen balíček 6 aktivních spinů (-100 Kč)", "");
             updateUI(); 
         } 
     }
@@ -730,22 +777,41 @@ const Game = (function() {
                     if(el) {
                         el.classList.add('win-active');
                         const bounds = el.getBoundingClientRect();
-                        ParticleEngine.spawnExplosion(bounds.left + bounds.width/2, bounds.top + bounds.height/2, 10, 'gold');
+                        ParticleEngine.spawnExplosion(bounds.left + bounds.width/2, bounds.top + bounds.height/2, 15, 'gold');
                     }
                 }
             });
 
-            UI.wrapper.classList.add('shake-animation');
-            setTimeout(() => UI.wrapper.classList.remove('shake-animation'), 400);
+            // LOGIKA PRO JACKPOT PŘI KOMBU 3 a více
+            let waitBeforeGamble = 700;
+            if (maxMatch >= 3) {
+                UI.wrapper.classList.add('shake-hard');
+                setTimeout(() => UI.wrapper.classList.remove('shake-hard'), 600);
+                
+                // Spuštění animace JACKPOT!
+                UI.jackpotAnim.classList.remove('fire');
+                void UI.jackpotAnim.offsetWidth; // Force reflow
+                UI.jackpotAnim.classList.add('fire');
+                
+                // Zvuky a ohňostroj
+                Mp3Player.playJackpot();
+                ParticleEngine.spawnExplosion(window.innerWidth / 2, window.innerHeight / 2, 200, 'gold');
+                
+                logTerminal(`MIMOŘÁDNÝ JACKPOT! ${maxMatch}x ${winningChar}`, "success");
+                waitBeforeGamble = 1800; // Zdržíme okno pro risk o 1.8 sekundy
+            } else {
+                UI.wrapper.classList.add('shake-animation');
+                setTimeout(() => UI.wrapper.classList.remove('shake-animation'), 400);
+            }
 
-            UI.status.textContent = `VÝHRA: +${finalWin} Kč (${maxMatch}x ${winningChar})!`;
+            UI.status.textContent = `VÝHRA: +${finalWin.toLocaleString()} Kč (${maxMatch}x ${winningChar})!`;
             UI.status.className = "status-bar c-green";
-            logTerminal(`Trefena shoda ${maxMatch}x ${winningChar}. Výhra: ${finalWin} Kč`, "success");
+            logTerminal(`Výhra: ${finalWin.toLocaleString()} Kč`, "success");
             
             setTimeout(() => {
-                document.getElementById('gambleAmountText').textContent = `${state.pendingWinAmount} Kč`;
+                document.getElementById('gambleAmountText').textContent = `${state.pendingWinAmount.toLocaleString()} Kč`;
                 document.getElementById('gambleScreen').classList.add('active');
-            }, 700);
+            }, waitBeforeGamble);
 
         } else { 
             Mp3Player.playLoss();
@@ -774,14 +840,14 @@ const Game = (function() {
             
             Mp3Player.playBigWin();
 
-            logTerminal(`Úspěšný risk! Karta byla ${dealerColor === 'red' ? 'ČERVENÁ' : 'ČERNÁ'}. Výhra zdvojnásobena na ${state.pendingWinAmount} Kč`, "success");
-            UI.status.textContent = `Gamble Vyhrán! +${state.pendingWinAmount} Kč`;
+            logTerminal(`Risk vyšel (${dealerColor === 'red' ? 'ČERVENÁ' : 'ČERNÁ'}). MÁŠ ${state.pendingWinAmount.toLocaleString()} Kč`, "success");
+            UI.status.textContent = `Gamble Vyhrán! +${state.pendingWinAmount.toLocaleString()} Kč`;
             
             ParticleEngine.spawnExplosion(window.innerWidth / 2, window.innerHeight / 2, 80, 'gold');
         } else {
             Mp3Player.playLoss();
             
-            logTerminal(`Risk nevyšel. Karta byla ${dealerColor === 'red' ? 'ČERVENÁ' : 'ČERNÁ'}. Celá výhra propadla automatu.`, "alert");
+            logTerminal(`Karta byla ${dealerColor === 'red' ? 'ČERVENÁ' : 'ČERNÁ'}. Prohrál jsi peníze.`, "alert");
             UI.status.textContent = "Gamble ztracen! 0 Kč";
             state.pendingWinAmount = 0;
         }
@@ -795,11 +861,11 @@ const Game = (function() {
         document.getElementById('gambleScreen').classList.remove('active');
         state.balance += state.pendingWinAmount;
         
-        if (state.pendingWinAmount > 1000) {
+        if (state.pendingWinAmount > 5000) {
             Mp3Player.playBigWin();
         }
 
-        logTerminal(`Gamble přeskočen. Připsáno čistých: ${state.pendingWinAmount} Kč`, "");
+        logTerminal(`Gamble přeskočen. Připsáno: ${state.pendingWinAmount.toLocaleString()} Kč`, "");
         state.pendingWinAmount = 0;
         updateUI();
         checkExekuceState();
@@ -813,12 +879,12 @@ const Game = (function() {
             switch(type) { 
                 case 'luck': 
                     state.luckLv++; 
-                    state.prices.luck = Math.floor(state.prices.luck * 2.5); 
+                    state.prices.luck = Math.floor(state.prices.luck * 2.5); // Škálování cen
                     logTerminal(`Zakoupen upgrade Štěstí na úroveň ${state.luckLv}`, "success");
                     break; 
                 case 'slot': 
                     state.slotsCount++; 
-                    state.prices.slot = Math.floor(state.prices.slot * 4.0); 
+                    state.prices.slot = Math.floor(state.prices.slot * 3.5); 
                     buildReelsStructure(); 
                     logTerminal(`Konstrukce rozšířena na ${state.slotsCount} válců.`, "success");
                     break; 
