@@ -1,9 +1,9 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CloverPit: Hardcore Meme Edition</title>
+    <title>CloverPit: Meme Edition (Balanced)</title>
     <style>
         :root {
             --bg-color: #030306;
@@ -262,8 +262,8 @@
 
 <div id="introScreen" class="overlay active">
     <div class="modal-content" style="border-color: var(--neon-cyan);">
-        <div id="introTitle" class="modal-title c-cyan">CLOVERPIT: HARDCORE</div>
-        <div class="modal-text">Jsi uzamčen. Oproti minule se systém zbláznil. <strong>15 spinů</strong> na fázi. Šance jsou proti tobě, upgrady stojí majlant a dluhy stoupají raketovým tempem. Zapni si zvuk na maximum.</div>
+        <div id="introTitle" class="modal-title c-cyan">CLOVERPIT: RE-BALANCED</div>
+        <div class="modal-text">Jsi uzamčen. Oproti minule je systém trochu vstřícnější. Máš pohodlných <strong>20 spinů</strong> na fázi a všechny upgrady jsou o 50 % levnější. Připrav si ale ty mp3!</div>
         <button class="modal-btn" onclick="Game.init()">Spustit Systém</button>
     </div>
 </div>
@@ -279,7 +279,7 @@
 <div id="deathScreen" class="overlay">
     <div class="modal-content" style="border-color: var(--neon-red);">
         <div class="modal-title c-red glitch">LIQUIDACE</div>
-        <div class="modal-text">15 spinů uběhlo a peníze chybí. Tvůj bankrot je definitivní.</div>
+        <div class="modal-text">20 spinů uběhlo a peníze chybí. Tvůj bankrot je definitivní.</div>
         <button class="modal-btn" onclick="location.reload()">Zkusit znovu</button>
     </div>
 </div>
@@ -305,7 +305,7 @@
     <div class="dashboard">
         <div class="dash-box highlight">
             <span class="dash-label">Spiny do exekuce</span>
-            <span id="debtSpinsDisplay" class="dash-val c-red pulse">15</span>
+            <span id="debtSpinsDisplay" class="dash-val c-red pulse">20</span>
         </div>
         <div class="dash-box">
             <span class="dash-label">Požadovaný Dluh</span>
@@ -472,9 +472,8 @@ const ParticleEngine = (function() {
     return { init, spawnExplosion };
 })();
 
-// HERNI LOGIKA S VYŠŠÍ OBTÍŽNOSTÍ
+// HERNI LOGIKA
 const Game = (function() {
-    // Snížená pravděpodobnost vzácných symbolů (hardcore mode)
     const SYMBOLS = [
         { char: '🍋', base: 10, weight: 250 }, 
         { char: '🍒', base: 18, weight: 200 }, 
@@ -486,7 +485,6 @@ const Game = (function() {
         { char: '🔥', base: 1000, weight: 2 }    
     ];
 
-    // Výrazně vyšší dluhy a hardcore postupy
     const SHIFTS = [
         { level: 1, debt: 1500 }, 
         { level: 2, debt: 8500 },
@@ -500,13 +498,13 @@ const Game = (function() {
         shiftIdx: 0, 
         balance: 400, 
         spins: 0, 
-        debtSpinsRemaining: 20, // POUZE 15 SPINŮ
+        debtSpinsRemaining: 20, // ZMENA NA 20 SPINŮ
         slotsCount: 3, 
         luckLv: 0, 
         symMult: 1.0, 
         patMult: 1.0, 
         isSpinning: false, 
-        prices: { luck: 400, slot: 1200, patMult: 800 }, // Zvýšené ceny upgradů
+        prices: { luck: 200, slot: 600, patMult: 400 }, // ZMENA: UPGRADY O 50% LEVNĚJŠÍ
         lastSpinResult: [],
         pendingWinAmount: 0
     };
@@ -535,7 +533,7 @@ const Game = (function() {
         ParticleEngine.init();
         initDOM(); 
         document.getElementById('introScreen').classList.remove('active'); 
-        logTerminal("Inicializace HARDCORE jádra...", "success");
+        logTerminal("Inicializace odlehčeného jádra...", "success");
         loadShift(0); 
         buildReelsStructure(); 
         updateUI(); 
@@ -560,9 +558,9 @@ const Game = (function() {
         }
         state.shiftIdx = index;
         state.symMult = SYMBOL_LEVEL_MULTS[index];
-        state.debtSpinsRemaining = 15; // Reset spinů na 15
+        state.debtSpinsRemaining = 20; // 20 spinů per fáze
         
-        logTerminal(`Spuštěna fáze ${SHIFTS[index].level}. Cílový dluh: ${SHIFTS[index].debt} Kč do 15 spinů.`, "alert");
+        logTerminal(`Spuštěna fáze ${SHIFTS[index].level}. Cílový dluh: ${SHIFTS[index].debt} Kč do 20 spinů.`, "alert");
         updateUI(); 
     }
     
@@ -573,7 +571,7 @@ const Game = (function() {
             logTerminal(`Splátka dluhu ve výši ${currentDebt} Kč byla úspěšně uhrazena.`, "success");
             
             Mp3Player.stopAll();
-            Mp3Player.playJackpot(); // JACKPOT ZVUK PŘI SPLACENÍ DLUHU
+            Mp3Player.playJackpot();
             
             const rect = UI.debt.getBoundingClientRect();
             ParticleEngine.spawnExplosion(rect.left + rect.width/2, rect.top + rect.height/2, 60, 'cyan');
@@ -614,7 +612,7 @@ const Game = (function() {
         document.getElementById('btnSlot').disabled = (state.balance < state.prices.slot || state.slotsCount >= 6 || state.isSpinning);
         document.getElementById('btnPatMult').disabled = (state.balance < state.prices.patMult || state.isSpinning);
         
-        UI.buySpinsBtn.disabled = (state.balance < 150 || state.isSpinning); // Spiny stoji vic
+        UI.buySpinsBtn.disabled = (state.balance < 150 || state.isSpinning); 
         UI.spinBtn.disabled = (state.spins <= 0 || state.isSpinning || state.debtSpinsRemaining <= 0);
     }
 
@@ -631,7 +629,7 @@ const Game = (function() {
 
     function pullRandomSymbolCalculated() { 
         let totalWeight = 0; 
-        let luckModifier = state.luckLv * 12; // Štěstí má slabší efekt
+        let luckModifier = state.luckLv * 12; 
         
         let mapped = SYMBOLS.map(s => { 
             let w = s.weight; 
@@ -665,7 +663,7 @@ const Game = (function() {
         state.debtSpinsRemaining -= 1;
         state.isSpinning = true; 
         
-        Mp3Player.stopAll(); // Zastaví předchozí meme audia
+        Mp3Player.stopAll(); 
 
         UI.status.textContent = "Válce rotují...";
         UI.status.className = "status-bar c-cyan";
@@ -750,7 +748,6 @@ const Game = (function() {
             }, 700);
 
         } else { 
-            // PROHRA - SPOUŠTÍ SE "AW DANG IT" MEME
             Mp3Player.playLoss();
             
             UI.status.textContent = "Žádná shoda. Zkus to znovu.";
@@ -769,13 +766,12 @@ const Game = (function() {
 
     function resolveGamble(chosenColor) {
         document.getElementById('gambleScreen').classList.remove('active');
-        let dealerColor = Math.random() > 0.5 ? 'red' : 'black'; // 50/50 šance
+        let dealerColor = Math.random() > 0.5 ? 'red' : 'black';
         
         if (chosenColor === dealerColor) {
             state.pendingWinAmount *= 2;
             state.balance += state.pendingWinAmount;
             
-            // GAMBLE WIN - SPOUŠTÍ SE "LET'S BE FINANCIALLY RESPONSIBLE"
             Mp3Player.playBigWin();
 
             logTerminal(`Úspěšný risk! Karta byla ${dealerColor === 'red' ? 'ČERVENÁ' : 'ČERNÁ'}. Výhra zdvojnásobena na ${state.pendingWinAmount} Kč`, "success");
@@ -783,7 +779,6 @@ const Game = (function() {
             
             ParticleEngine.spawnExplosion(window.innerWidth / 2, window.innerHeight / 2, 80, 'gold');
         } else {
-            // GAMBLE ZTRACEN - SPOUŠTÍ SE "AW DANG IT"
             Mp3Player.playLoss();
             
             logTerminal(`Risk nevyšel. Karta byla ${dealerColor === 'red' ? 'ČERVENÁ' : 'ČERNÁ'}. Celá výhra propadla automatu.`, "alert");
@@ -800,7 +795,6 @@ const Game = (function() {
         document.getElementById('gambleScreen').classList.remove('active');
         state.balance += state.pendingWinAmount;
         
-        // POKUD JE TO HODNĚ PENĚZ, SPUSTÍ SE FINANCIALLY RESPONSIBLE
         if (state.pendingWinAmount > 1000) {
             Mp3Player.playBigWin();
         }
