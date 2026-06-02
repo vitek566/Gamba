@@ -84,7 +84,7 @@
 
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px dashed #15152a; padding-bottom: 12px; }
         .header-titles { text-align: left; }
-        h1 { font-size: 2.8rem; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 20px var(--neon-cyan); }
+        h1 { font-size: 2.3rem; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 20px var(--neon-cyan); margin-top: 5px; }
         .subtitle { font-size: 0.85rem; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
         
         .menu-toggle-btn {
@@ -239,15 +239,14 @@
 <canvas id="particleCanvas"></canvas>
 <div id="jackpotAnim" class="jackpot-anim-container">JACKPOT!</div>
 
-<!-- UPRAVENÉ: HLAVNÍ MENU / PAUZA MENU -->
 <div id="introScreen" class="overlay active">
     <div class="modal-content" style="border-color: var(--neon-cyan);">
-        <div class="modal-title c-cyan glitch" style="font-size: 2.5rem;">CLOVERPIT TERMINAL</div>
+        <div style="font-size: 1.2rem; color: var(--text-gold); margin-bottom: 10px; letter-spacing: 4px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);">CREATED BY VÍTEK STUDIOS</div>
+        <div class="modal-title c-cyan glitch" style="font-size: 3rem;">HLAVNÍ MENU</div>
         <div class="modal-text">Kampaň o 30 směnách. Levely 5, 10, 20 a 30 jsou milníky s masivními dluhy. Pozor na anti-OP modifikátory prostředí!</div>
         
-        <!-- Sekce Nastavení Zvuku -->
         <div class="menu-section">
-            <div class="menu-section-title">🔊 Nastavení Zvuku a Hudby</div>
+            <div class="menu-section-title">🔊 Nastavení Zvuku</div>
             <div class="setting-row">
                 <span>Hlasitost efektů:</span>
                 <input type="range" id="volumeSFX" min="0" max="100" value="50" onchange="AudioEngine.updateVolumes()">
@@ -256,25 +255,13 @@
                 <span>Hlasitost hudby:</span>
                 <input type="range" id="volumeBGM" min="0" max="100" value="40" onchange="AudioEngine.updateVolumes()">
             </div>
-            <div class="setting-row">
-                <span>Zdroj hudby:</span>
-                <select id="musicSourceSelect" onchange="AudioEngine.handleSourceChange()">
-                    <option value="synth">Industriální Synth (Generovaný)</option>
-                    <option value="custom">Vlastní MP3 / Stream URL</option>
-                </select>
-            </div>
-            <div class="setting-row" id="customMusicRow" style="display: none;">
-                <span>URL adresa skladby:</span>
-                <input type="text" id="customMusicURL" placeholder="https://example.com/music.mp3" onchange="AudioEngine.loadCustomMusic()">
-            </div>
         </div>
 
-        <button id="startGameBtn" class="modal-btn primary" onclick="Game.init()">Spustit Kampaň</button>
+        <button id="startGameBtn" class="modal-btn primary" onclick="Game.init()">Spustit Hru</button>
         <button id="resumeGameBtn" class="modal-btn" style="display: none;" onclick="Game.toggleMenu()">Návrat do hry</button>
     </div>
 </div>
 
-<!-- VOLBA PROKLETÍ -->
 <div id="debuffChoiceScreen" class="overlay">
     <div class="modal-content" style="border-color: var(--neon-red);">
         <div class="modal-title c-red glitch" style="font-size: 2rem;">VOLBA PROKLETÍ</div>
@@ -318,10 +305,10 @@
 <div class="game-wrapper" id="gameMainWrapper">
     <div class="header">
         <div class="header-titles">
+            <div style="font-size: 0.75rem; color: var(--text-gold); letter-spacing: 1px; font-weight: bold; margin-bottom: 2px;">CREATED BY VÍTEK STUDIOS</div>
             <h1>CloverPit</h1>
             <div class="subtitle" id="shiftDisplay">Směna: 1 / 30</div>
         </div>
-        <!-- NOVÉ: Tlačítko pro vyvolání Menu/Pauzy -->
         <button class="menu-toggle-btn" onclick="Game.toggleMenu()">⚙️ MENU</button>
     </div>
 
@@ -415,16 +402,13 @@ const Mp3Player = {
 
 const AudioEngine = (function() {
     let ctx = null;
-    let bgmInterval = null;
-    let customAudio = null;
-    let currentMusicMode = 'synth'; // 'synth' nebo 'custom'
-    let masterBGMVolumeNode = null;
+    let bgmAudio = new Audio('http://googleusercontent.com/file_content/0');
+    bgmAudio.loop = true;
+    let isBgmPlaying = false;
 
     function init() { 
         if (!ctx) {
             ctx = new (window.AudioContext || window.webkitAudioContext)();
-            masterBGMVolumeNode = ctx.createGain();
-            masterBGMVolumeNode.connect(ctx.destination);
         }
         if (ctx && ctx.state === 'suspended') ctx.resume(); 
         updateVolumes();
@@ -437,7 +421,6 @@ const AudioEngine = (function() {
             osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime);
             if (slideTo > 0) osc.frequency.exponentialRampToValueAtTime(slideTo, ctx.currentTime + duration);
             
-            // Reaguje na nastavení SFX slideru
             let sfxVolModifier = parseInt(document.getElementById('volumeSFX').value) / 100;
             gain.gain.setValueAtTime(vol * sfxVolModifier, ctx.currentTime); 
             gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
@@ -447,61 +430,22 @@ const AudioEngine = (function() {
     }
 
     function startBPM() {
-        if (bgmInterval) return;
-        let step = 0;
-        const notes = [110, 110, 130, 110, 146, 110, 130, 165];
-        bgmInterval = setInterval(() => {
-            if (!ctx || currentMusicMode !== 'synth') return;
+        if (!isBgmPlaying) {
             let bgmVolModifier = parseInt(document.getElementById('volumeBGM').value) / 100;
-            if (step % 2 === 0) {
-                playTone(notes[(step / 2) % notes.length], 'sawtooth', 0.18, 0.04 * bgmVolModifier);
-            }
-            if (step % 4 === 2) {
-                playTone(8000, 'triangle', 0.01, 0.008 * bgmVolModifier);
-            }
-            step++;
-        }, 150);
-    }
-
-    function handleSourceChange() {
-        const type = document.getElementById('musicSourceSelect').value;
-        currentMusicMode = type;
-        if (type === 'custom') {
-            document.getElementById('customMusicRow').style.display = 'flex';
-            // Zastavíme synth a pustíme custom
-            if (customAudio) customAudio.play().catch(e => {});
-        } else {
-            document.getElementById('customMusicRow').style.display = 'none';
-            if (customAudio) customAudio.pause();
-        }
-    }
-
-    function loadCustomMusic() {
-        const url = document.getElementById('customMusicURL').value;
-        if (!url) return;
-        if (customAudio) {
-            customAudio.pause();
-        }
-        customAudio = new Audio(url);
-        customAudio.loop = true;
-        updateVolumes();
-        if (currentMusicMode === 'custom') {
-            customAudio.play().catch(e => console.log("Chyba při přehrávání custom URL. Ujistěte se, že odkaz je přímý a CORS přístupný."));
+            bgmAudio.volume = bgmVolModifier;
+            bgmAudio.play().catch(e => console.log("Prohlížeč čeká na interakci k přehrání hudby."));
+            isBgmPlaying = true;
         }
     }
 
     function updateVolumes() {
         let bgmVol = parseInt(document.getElementById('volumeBGM').value) / 100;
-        if (customAudio) {
-            customAudio.volume = bgmVol;
-        }
+        if (bgmAudio) bgmAudio.volume = bgmVol;
     }
 
     return {
         init,
         startBPM,
-        handleSourceChange,
-        loadCustomMusic,
         updateVolumes,
         getVolumeSFX: () => parseInt(document.getElementById('volumeSFX').value) / 100,
         spinTick: () => playTone(800, 'square', 0.04, 0.015, 350),
