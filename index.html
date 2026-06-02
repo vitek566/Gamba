@@ -82,9 +82,17 @@
             width: 100%; max-width: 880px; border: 2px solid #121222; position: relative; z-index: 10;
         }
 
-        .header { text-align: center; margin-bottom: 15px; border-bottom: 2px dashed #15152a; padding-bottom: 12px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px dashed #15152a; padding-bottom: 12px; }
+        .header-titles { text-align: left; }
         h1 { font-size: 2.8rem; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 20px var(--neon-cyan); }
         .subtitle { font-size: 0.85rem; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+        
+        .menu-toggle-btn {
+            background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan);
+            padding: 8px 15px; border-radius: 6px; cursor: pointer; font-family: var(--font-main);
+            font-weight: bold; transition: all 0.2s;
+        }
+        .menu-toggle-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); }
 
         /* Panel modifikátorů */
         .modifier-bar {
@@ -189,15 +197,30 @@
             opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
         .overlay.active { opacity: 1; pointer-events: all; }
-        .modal-content { text-align: center; max-width: 550px; padding: 25px; border: 1px dashed #222; background: #010102; border-radius: 12px; }
+        .modal-content { text-align: center; max-width: 550px; padding: 25px; border: 1px dashed #222; background: #010102; border-radius: 12px; width: 90%; }
         .modal-title { font-size: 3rem; text-transform: uppercase; font-weight: 900; letter-spacing: 4px; margin-bottom: 12px; }
         .modal-text { font-size: 1rem; color: #888; line-height: 1.5; margin-bottom: 20px; }
+        
+        .menu-section {
+            background: #06060f; border: 1px solid #151530; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: left;
+        }
+        .menu-section-title { font-size: 0.9rem; color: var(--neon-cyan); text-transform: uppercase; margin-bottom: 10px; font-weight: bold; letter-spacing: 1px;}
+
         .modal-btn {
             background: transparent; border: 2px solid #fff; color: #fff; padding: 10px 30px;
             font-size: 1rem; font-family: var(--font-main); text-transform: uppercase; cursor: pointer; font-weight: bold;
-            margin-top: 5px; width: 100%;
+            margin-top: 5px; width: 100%; transition: all 0.2s;
         }
         .modal-btn:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
+        .modal-btn.primary { border-color: var(--neon-green); color: var(--neon-green); }
+        .modal-btn.primary:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
+
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.85rem; }
+        .setting-row input[type="range"] { flex-grow: 1; margin-left: 15px; accent-color: var(--neon-cyan); }
+        .setting-row select, .setting-row input[type="text"] { 
+            background: #000; border: 1px solid #222; color: #fff; padding: 4px 8px; font-family: monospace; font-size: 0.8rem; border-radius: 4px;
+        }
+        .setting-row input[type="text"] { width: 60%; }
 
         .gamble-box { display: flex; gap: 15px; justify-content: center; margin-top: 15px; }
         .gamble-choice-btn { padding: 12px 25px; font-size: 1.3rem; font-weight: bold; cursor: pointer; border: 2px solid #fff; border-radius: 6px; font-family: monospace; }
@@ -216,15 +239,42 @@
 <canvas id="particleCanvas"></canvas>
 <div id="jackpotAnim" class="jackpot-anim-container">JACKPOT!</div>
 
+<!-- UPRAVENÉ: HLAVNÍ MENU / PAUZA MENU -->
 <div id="introScreen" class="overlay active">
     <div class="modal-content" style="border-color: var(--neon-cyan);">
-        <div class="modal-title c-cyan" style="font-size: 2.3rem;">CLOVERPIT: 30 DEBTS</div>
-        <div class="modal-text">Vstoupil jsi do vytrvalostní kampaně o 30 směnách. Levely 5, 10, 20 a 30 jsou obří milníky s masivními dluhy, ale štědrým časem. Pozor na anti-OP modifikátory prostředí, které ti v pozdní fázi seberou buffy!</div>
-        <button class="modal-btn" onclick="Game.init()">Spustit Kampaň</button>
+        <div class="modal-title c-cyan glitch" style="font-size: 2.5rem;">CLOVERPIT TERMINAL</div>
+        <div class="modal-text">Kampaň o 30 směnách. Levely 5, 10, 20 a 30 jsou milníky s masivními dluhy. Pozor na anti-OP modifikátory prostředí!</div>
+        
+        <!-- Sekce Nastavení Zvuku -->
+        <div class="menu-section">
+            <div class="menu-section-title">🔊 Nastavení Zvuku a Hudby</div>
+            <div class="setting-row">
+                <span>Hlasitost efektů:</span>
+                <input type="range" id="volumeSFX" min="0" max="100" value="50" onchange="AudioEngine.updateVolumes()">
+            </div>
+            <div class="setting-row">
+                <span>Hlasitost hudby:</span>
+                <input type="range" id="volumeBGM" min="0" max="100" value="40" onchange="AudioEngine.updateVolumes()">
+            </div>
+            <div class="setting-row">
+                <span>Zdroj hudby:</span>
+                <select id="musicSourceSelect" onchange="AudioEngine.handleSourceChange()">
+                    <option value="synth">Industriální Synth (Generovaný)</option>
+                    <option value="custom">Vlastní MP3 / Stream URL</option>
+                </select>
+            </div>
+            <div class="setting-row" id="customMusicRow" style="display: none;">
+                <span>URL adresa skladby:</span>
+                <input type="text" id="customMusicURL" placeholder="https://example.com/music.mp3" onchange="AudioEngine.loadCustomMusic()">
+            </div>
+        </div>
+
+        <button id="startGameBtn" class="modal-btn primary" onclick="Game.init()">Spustit Kampaň</button>
+        <button id="resumeGameBtn" class="modal-btn" style="display: none;" onclick="Game.toggleMenu()">Návrat do hry</button>
     </div>
 </div>
 
-<!-- NOVÝ MODAL PRO VÝBĚR DEBUFFU KAŽDÝCH 5 LEVELŮ -->
+<!-- VOLBA PROKLETÍ -->
 <div id="debuffChoiceScreen" class="overlay">
     <div class="modal-content" style="border-color: var(--neon-red);">
         <div class="modal-title c-red glitch" style="font-size: 2rem;">VOLBA PROKLETÍ</div>
@@ -267,8 +317,12 @@
 
 <div class="game-wrapper" id="gameMainWrapper">
     <div class="header">
-        <h1>CloverPit</h1>
-        <div class="subtitle" id="shiftDisplay">Směna: 1 / 30</div>
+        <div class="header-titles">
+            <h1>CloverPit</h1>
+            <div class="subtitle" id="shiftDisplay">Směna: 1 / 30</div>
+        </div>
+        <!-- NOVÉ: Tlačítko pro vyvolání Menu/Pauzy -->
+        <button class="menu-toggle-btn" onclick="Game.toggleMenu()">⚙️ MENU</button>
     </div>
 
     <div id="modBar" class="modifier-bar">
@@ -295,7 +349,7 @@
     </div>
 
     <div class="pay-debt-container">
-        <button id="payDebtBtn" class="pay-debt-btn" onclick="Game.payDebt()">SPLATIT DLUB</button>
+        <button id="payDebtBtn" class="pay-debt-btn" onclick="Game.payDebt()">SPLATIT DLUH</button>
     </div>
 
     <div class="slot-machine-viewport">
@@ -353,19 +407,27 @@ const Mp3Player = {
     awDangIt: new Audio('lets-go-gambling-aw-dang-it.mp3'),
     finResponsible: new Audio('lets-be-financially-responsible.mp3'),
 
-    playLoss: function() { this.awDangIt.currentTime = 0; this.awDangIt.play().catch(e => {}); },
-    playBigWin: function() { this.finResponsible.currentTime = 0; this.finResponsible.play().catch(e => {}); },
-    playJackpot: function() { this.jackpot.currentTime = 0; this.jackpot.play().catch(e => {}); },
+    playLoss: function() { this.awDangIt.currentTime = 0; this.awDangIt.volume = AudioEngine.getVolumeSFX(); this.awDangIt.play().catch(e => {}); },
+    playBigWin: function() { this.finResponsible.currentTime = 0; this.finResponsible.volume = AudioEngine.getVolumeSFX(); this.finResponsible.play().catch(e => {}); },
+    playJackpot: function() { this.jackpot.currentTime = 0; this.jackpot.volume = AudioEngine.getVolumeSFX(); this.jackpot.play().catch(e => {}); },
     stopAll: function() { this.jackpot.pause(); this.jackpot.currentTime = 0; this.awDangIt.pause(); this.awDangIt.currentTime = 0; this.finResponsible.pause(); this.finResponsible.currentTime = 0; }
 };
 
 const AudioEngine = (function() {
     let ctx = null;
     let bgmInterval = null;
+    let customAudio = null;
+    let currentMusicMode = 'synth'; // 'synth' nebo 'custom'
+    let masterBGMVolumeNode = null;
 
     function init() { 
-        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); 
+        if (!ctx) {
+            ctx = new (window.AudioContext || window.webkitAudioContext)();
+            masterBGMVolumeNode = ctx.createGain();
+            masterBGMVolumeNode.connect(ctx.destination);
+        }
         if (ctx && ctx.state === 'suspended') ctx.resume(); 
+        updateVolumes();
     }
     
     function playTone(freq, type, duration, vol=0.1, slideTo=0) {
@@ -374,33 +436,74 @@ const AudioEngine = (function() {
             const osc = ctx.createOscillator(); const gain = ctx.createGain();
             osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime);
             if (slideTo > 0) osc.frequency.exponentialRampToValueAtTime(slideTo, ctx.currentTime + duration);
-            gain.gain.setValueAtTime(vol, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+            
+            // Reaguje na nastavení SFX slideru
+            let sfxVolModifier = parseInt(document.getElementById('volumeSFX').value) / 100;
+            gain.gain.setValueAtTime(vol * sfxVolModifier, ctx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+            
             osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + duration);
         } catch(e) {}
     }
 
-    // NOVÉ: Generátor temné industriální hudby na pozadí (Cyberpunk Synth Bassline loop)
     function startBPM() {
         if (bgmInterval) return;
         let step = 0;
-        const notes = [110, 110, 130, 110, 146, 110, 130, 165]; // Temná synťáková smyčka
+        const notes = [110, 110, 130, 110, 146, 110, 130, 165];
         bgmInterval = setInterval(() => {
-            if (!ctx) return;
-            // Hutná basa na každý sudý krok
+            if (!ctx || currentMusicMode !== 'synth') return;
+            let bgmVolModifier = parseInt(document.getElementById('volumeBGM').value) / 100;
             if (step % 2 === 0) {
-                playTone(notes[(step / 2) % notes.length], 'sawtooth', 0.18, 0.015);
+                playTone(notes[(step / 2) % notes.length], 'sawtooth', 0.18, 0.04 * bgmVolModifier);
             }
-            // Simulace mechanického hi-hatu na off-beaty
             if (step % 4 === 2) {
-                playTone(8000, 'triangle', 0.01, 0.003);
+                playTone(8000, 'triangle', 0.01, 0.008 * bgmVolModifier);
             }
             step++;
         }, 150);
     }
 
+    function handleSourceChange() {
+        const type = document.getElementById('musicSourceSelect').value;
+        currentMusicMode = type;
+        if (type === 'custom') {
+            document.getElementById('customMusicRow').style.display = 'flex';
+            // Zastavíme synth a pustíme custom
+            if (customAudio) customAudio.play().catch(e => {});
+        } else {
+            document.getElementById('customMusicRow').style.display = 'none';
+            if (customAudio) customAudio.pause();
+        }
+    }
+
+    function loadCustomMusic() {
+        const url = document.getElementById('customMusicURL').value;
+        if (!url) return;
+        if (customAudio) {
+            customAudio.pause();
+        }
+        customAudio = new Audio(url);
+        customAudio.loop = true;
+        updateVolumes();
+        if (currentMusicMode === 'custom') {
+            customAudio.play().catch(e => console.log("Chyba při přehrávání custom URL. Ujistěte se, že odkaz je přímý a CORS přístupný."));
+        }
+    }
+
+    function updateVolumes() {
+        let bgmVol = parseInt(document.getElementById('volumeBGM').value) / 100;
+        if (customAudio) {
+            customAudio.volume = bgmVol;
+        }
+    }
+
     return {
         init,
         startBPM,
+        handleSourceChange,
+        loadCustomMusic,
+        updateVolumes,
+        getVolumeSFX: () => parseInt(document.getElementById('volumeSFX').value) / 100,
         spinTick: () => playTone(800, 'square', 0.04, 0.015, 350),
         stopTick: () => playTone(400, 'sine', 0.07, 0.05),
         upgrade: () => playTone(1000, 'sine', 0.2, 0.04, 1400)
@@ -440,7 +543,7 @@ const ParticleEngine = (function() {
     return { init, spawnExplosion };
 })();
 
-// --- LOGIKA HRY VČETNĚ 30 LEVELŮ ---
+// --- LOGIKA HRY ---
 const Game = (function() {
     const SYMBOLS = [
         { char: '🍋', base: 10, weight: 260 }, 
@@ -453,38 +556,32 @@ const Game = (function() {
         { char: '🔥', base: 1200, weight: 1.5 }    
     ];
 
-    // MATICE KAMPANÊ: 30 LEVELŮ
     const SHIFTS = [
         { lvl: 1,  debt: 1000,      spins: 25, mult: 1,      mod: 'none',             desc: 'Základní trénink. Normální provoz.' },
         { lvl: 2,  debt: 3500,      spins: 25, mult: 1.5,    mod: 'none',             desc: 'Mírný nárůst tlaku.' },
         { lvl: 3,  debt: 8000,      spins: 20, mult: 2.2,    mod: 'none',             desc: 'Spiny ubývají.' },
         { lvl: 4,  debt: 18000,     spins: 20, mult: 3.5,    mod: 'none',             desc: 'Příprava na první milník.' },
         { lvl: 5,  debt: 120000,    spins: 50, mult: 10,     mod: 'power_gold',       desc: '💎 BOSS MILNÍK: Velký dluh / hodně spinů. POWER-UP: Výhry x2!' },
-        
         { lvl: 6,  debt: 35000,     spins: 20, mult: 5,      mod: 'none',             desc: 'Návrat do reality.' },
         { lvl: 7,  debt: 60000,     spins: 18, mult: 7,      mod: 'debuff_luck',      desc: '⚠️ DEBUFF: Prokleté válce! Tvůj upgrade Štěstí je ignorován.' },
         { lvl: 8,  debt: 95000,     spins: 20, mult: 10,     mod: 'none',             desc: 'Standardní provoz.' },
         { lvl: 9,  debt: 140000,    spins: 18, mult: 14,     mod: 'none',             desc: 'Čas se krátí.' },
         { lvl: 10, debt: 1500000,   spins: 60, mult: 50,     mod: 'power_overdrive',  desc: '💎 BOSS MILNÍK: POWER-UP: Přetížení! Automaticky max 6 válců zdarma.' },
-        
         { lvl: 11, debt: 300000,    spins: 20, mult: 20,     mod: 'none',             desc: 'Částky začínají bolet.' },
         { lvl: 12, debt: 500000,    spins: 22, mult: 30,     mod: 'debuff_inflation', desc: '⚠️ DEBUFF: Hyperinflace! Ceny v obchodě jsou zdvojené.' },
         { lvl: 13, debt: 750000,    spins: 20, mult: 45,     mod: 'none',             desc: 'Udržuj tempo.' },
         { lvl: 14, debt: 1100000,   spins: 18, mult: 65,     mod: 'none',             desc: 'Tuhý režim.' },
         { lvl: 15, debt: 2500000,   spins: 40, mult: 90,     mod: 'power_clover',     desc: '✨ POWER-UP: Čtyřlístky mají masivní bonus k výskytu.' },
-        
         { lvl: 16, debt: 1800000,   spins: 18, mult: 80,     mod: 'debuff_tax',       desc: '⚠️ DEBUFF: Zdanění výher! Síla kombinací snížena o 30 %.' },
         { lvl: 17, debt: 2600000,   spins: 20, mult: 120,    mod: 'none',             desc: 'Peníze protékají systémem.' },
         { lvl: 18, debt: 4000000,   spins: 18, mult: 180,    mod: 'none',             desc: 'Agresivní progrese.' },
         { lvl: 19, debt: 6500000,   spins: 16, mult: 250,    mod: 'none',             desc: 'Tlak kulminuje.' },
         { lvl: 20, debt: 60000000,  spins: 75, mult: 1000,   mod: 'none',             desc: '💎 MEGA MILNÍK: Brutální dluh, ale 75 pokusů. Zvládneš to bez výhod?' },
-        
         { lvl: 21, debt: 12000000,  spins: 20, mult: 400,    mod: 'debuff_crash',     desc: '⚠️ DEBUFF: Kolaps softwaru! Válce uzamčeny na max 4. Žádná velká komba.' },
         { lvl: 22, debt: 18000000,  spins: 20, mult: 600,    mod: 'none',             desc: 'Zotavování z kolapsu.' },
         { lvl: 23, debt: 28000000,  spins: 18, mult: 900,    mod: 'none',             desc: 'Hranice lidských možností.' },
         { lvl: 24, debt: 45000000,  spins: 30, mult: 1500,   mod: 'power_diamond',    desc: '✨ POWER-UP: Diamantový déšť! Diamanty a ohně padají mnohem častěji.' },
         { lvl: 25, debt: 40000000,  spins: 15, mult: 1100,   mod: 'debuff_austerity', desc: '⚠️ DEBUFF: Krize! Cena za dokoupení spinů stoupla na 500 Kč.' },
-        
         { lvl: 26, debt: 65000000,  spins: 18, mult: 1800,   mod: 'none',             desc: 'Finálový sprint započal.' },
         { lvl: 27, debt: 95000000,  spins: 15, mult: 2600,   mod: 'none',             desc: 'Chyba znamená okamžitý konec.' },
         { lvl: 28, debt: 140000000, spins: 20, mult: 3800,   mod: 'debuff_void',      desc: '⚠️ DEBUFF: Absolutní prázdnota! Zakoupený Kombo výkon je zcela vypnut!' },
@@ -497,8 +594,8 @@ const Game = (function() {
         slotsCount: 3, luckLv: 0, symMult: 1.0, patMult: 1.0, isSpinning: false,
         prices: { luck: 150, slot: 450, patMult: 300 },
         pendingWinAmount: 0,
+        gameStarted: false,
         
-        // NOVÉ REGISTRY PRO TVÉ UPRAVENÉ MECHANIKY
         pendingShiftIdx: null,
         chosenDebuffLevel: null,
         debuffStacks: { spinCost: 0, lessLuck: 0, tax: 0 }
@@ -521,24 +618,28 @@ const Game = (function() {
 
     function init() {
         AudioEngine.init(); 
-        AudioEngine.startBPM(); // Spustit hudbu na pozadí
+        AudioEngine.startBPM(); 
         ParticleEngine.init(); 
-        initDOM();
-        
-        document.getElementById('introScreen').classList.remove('active');
-        logTerminal("Systém inicializován. Spouštím kampaň: 30 podlaží dluhu.", "success");
-        
-        // UPRAVENO (Rule 1): Od 10 levelu jsou dluhy 2x větší
-        SHIFTS.forEach(s => {
-            if (s.lvl >= 10) {
-                s.debt *= 2;
-            }
-        });
+        if(!state.gameStarted) {
+            initDOM();
+            state.gameStarted = true;
+            document.getElementById('startGameBtn').style.display = 'none';
+            document.getElementById('resumeGameBtn').style.display = 'block';
+            
+            SHIFTS.forEach(s => { if (s.lvl >= 10) s.debt *= 2; });
+            loadShift(0); buildReels(); updateUI();
+        }
+        toggleMenu();
+        logTerminal("Systém inicializován. Směny spuštěny.", "success");
+    }
 
-        loadShift(0); buildReels(); updateUI();
+    function toggleMenu() {
+        const menu = document.getElementById('introScreen');
+        menu.classList.toggle('active');
     }
 
     function logTerminal(msg, type="") {
+        if(!UI.terminal) return;
         const line = document.createElement('div'); line.className = `terminal-line ${type}`;
         line.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] ${msg}`;
         UI.terminal.appendChild(line); UI.terminal.scrollTop = UI.terminal.scrollHeight;
@@ -552,11 +653,10 @@ const Game = (function() {
         
         const cur = SHIFTS[idx];
         
-        // UPRAVENO (Rule 3): Každý 5 level si hráč vybere jeden permanentní debuff
         if (cur.lvl % 5 === 0 && state.chosenDebuffLevel !== cur.lvl) {
             state.pendingShiftIdx = idx;
             document.getElementById('debuffChoiceScreen').classList.add('active');
-            return; // Zastaví načítání směny, dokud si hráč nevybere debuff
+            return;
         }
 
         state.shiftIdx = idx;
@@ -573,7 +673,6 @@ const Game = (function() {
         buildReels(); updateUI();
     }
 
-    // Zpracování výběru debuffu z obrazovky
     function selectDebuff(type) {
         state.debuffStacks[type]++;
         const cur = SHIFTS[state.pendingShiftIdx];
@@ -592,12 +691,12 @@ const Game = (function() {
 
     function getSpinCost() {
         let cost = SHIFTS[state.shiftIdx].mod === 'debuff_austerity' ? 500 : 100;
-        // Přičtení ceny za vybrané debuffy (každý stoh přidá 150 Kč)
         cost += (state.debuffStacks.spinCost * 150);
         return cost;
     }
 
     function buildReels() {
+        if(!UI.reelsContainer) return;
         UI.reelsContainer.innerHTML = '';
         const count = getEffectiveSlotsCount();
         for (let i = 0; i < count; i++) {
@@ -610,8 +709,6 @@ const Game = (function() {
     function pullSymbol() {
         const curMod = SHIFTS[state.shiftIdx].mod;
         let effLuck = curMod === 'debuff_luck' ? 0 : state.luckLv;
-        
-        // Aplikace debuffu z výběru každých 5 levelů
         effLuck = Math.max(0, effLuck - (state.debuffStacks.lessLuck * 2));
 
         let totalWeight = 0;
@@ -695,15 +792,11 @@ const Game = (function() {
         if (curMod === 'debuff_tax') effPatMult *= 0.7;
         if (curMod === 'debuff_void') effPatMult = 1.0;
 
-        // UPRAVENO (Rule 2): Od 10 levelu je kombo výkon 4x slabší
-        if (currentLvl >= 10) {
-            effPatMult /= 4;
-        }
+        if (currentLvl >= 10) { effPatMult /= 4; }
 
         let finalWin = maxMatch >= 2 ? Math.floor(totalBase * Math.pow(2.0, maxMatch - 2) * effPatMult) : 0;
         if (curMod === 'power_gold') finalWin *= 2;
 
-        // Aplikace permanentního debuffu zdanění (každý stoh krátí o 25%)
         if (state.debuffStacks.tax > 0) {
             finalWin = Math.floor(finalWin * Math.pow(0.75, state.debuffStacks.tax));
         }
@@ -788,6 +881,7 @@ const Game = (function() {
     }
 
     function updateUI() {
+        if(!UI.balance) return;
         const cur = SHIFTS[state.shiftIdx] || SHIFTS[SHIFTS.length-1];
         const curMod = cur.mod;
         
@@ -816,7 +910,7 @@ const Game = (function() {
         UI.spinBtn.disabled = (state.spins <= 0 || state.isSpinning || state.debtSpinsRemaining <= 0);
     }
 
-    return { init, buySpins, buyUpgrade, payDebt, resolveGamble, skipGamble, selectDebuff };
+    return { init, buySpins, buyUpgrade, payDebt, resolveGamble, skipGamble, selectDebuff, toggleMenu };
 })();
 </script>
 </body>
