@@ -195,6 +195,7 @@
         .modal-btn {
             background: transparent; border: 2px solid #fff; color: #fff; padding: 10px 30px;
             font-size: 1rem; font-family: var(--font-main); text-transform: uppercase; cursor: pointer; font-weight: bold;
+            margin-top: 5px; width: 100%;
         }
         .modal-btn:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
 
@@ -220,6 +221,19 @@
         <div class="modal-title c-cyan" style="font-size: 2.3rem;">CLOVERPIT: 30 DEBTS</div>
         <div class="modal-text">Vstoupil jsi do vytrvalostní kampaně o 30 směnách. Levely 5, 10, 20 a 30 jsou obří milníky s masivními dluhy, ale štědrým časem. Pozor na anti-OP modifikátory prostředí, které ti v pozdní fázi seberou buffy!</div>
         <button class="modal-btn" onclick="Game.init()">Spustit Kampaň</button>
+    </div>
+</div>
+
+<!-- NOVÝ MODAL PRO VÝBĚR DEBUFFU KAŽDÝCH 5 LEVELŮ -->
+<div id="debuffChoiceScreen" class="overlay">
+    <div class="modal-content" style="border-color: var(--neon-red);">
+        <div class="modal-title c-red glitch" style="font-size: 2rem;">VOLBA PROKLETÍ</div>
+        <div class="modal-text">Dosáhl jsi pětistupňového milníku. Systém vyžaduje oběť. Vyber si jeden permanentní debuff, který se přičte k tvým stávajícím trestům:</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="modal-btn" onclick="Game.selectDebuff('spinCost')">❌ DRAHÉ SPINY (+150 Kč k ceně nákupu)</button>
+            <button class="modal-btn" onclick="Game.selectDebuff('lessLuck')">❌ SMRTIELNÁ SMŮLA (-2 úrovně k tvému Štěstí)</button>
+            <button class="modal-btn" onclick="Game.selectDebuff('tax')">❌ DAŇOVÝ ÚŘAD (Všechny výsledné výhry kráceny o 25 %)</button>
+        </div>
     </div>
 </div>
 
@@ -347,7 +361,13 @@ const Mp3Player = {
 
 const AudioEngine = (function() {
     let ctx = null;
-    function init() { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx && ctx.state === 'suspended') ctx.resume(); }
+    let bgmInterval = null;
+
+    function init() { 
+        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); 
+        if (ctx && ctx.state === 'suspended') ctx.resume(); 
+    }
+    
     function playTone(freq, type, duration, vol=0.1, slideTo=0) {
         if (!ctx) return;
         try {
@@ -358,8 +378,29 @@ const AudioEngine = (function() {
             osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + duration);
         } catch(e) {}
     }
+
+    // NOVÉ: Generátor temné industriální hudby na pozadí (Cyberpunk Synth Bassline loop)
+    function startBPM() {
+        if (bgmInterval) return;
+        let step = 0;
+        const notes = [110, 110, 130, 110, 146, 110, 130, 165]; // Temná synťáková smyčka
+        bgmInterval = setInterval(() => {
+            if (!ctx) return;
+            // Hutná basa na každý sudý krok
+            if (step % 2 === 0) {
+                playTone(notes[(step / 2) % notes.length], 'sawtooth', 0.18, 0.015);
+            }
+            // Simulace mechanického hi-hatu na off-beaty
+            if (step % 4 === 2) {
+                playTone(8000, 'triangle', 0.01, 0.003);
+            }
+            step++;
+        }, 150);
+    }
+
     return {
         init,
+        startBPM,
         spinTick: () => playTone(800, 'square', 0.04, 0.015, 350),
         stopTick: () => playTone(400, 'sine', 0.07, 0.05),
         upgrade: () => playTone(1000, 'sine', 0.2, 0.04, 1400)
@@ -412,7 +453,7 @@ const Game = (function() {
         { char: '🔥', base: 1200, weight: 1.5 }    
     ];
 
-    // MATICE KAMPANĚ: 30 LEVELŮ (Vyladěná křivka dluhů, multiplikátorů a modifikátorů)
+    // MATICE KAMPANÊ: 30 LEVELŮ
     const SHIFTS = [
         { lvl: 1,  debt: 1000,      spins: 25, mult: 1,      mod: 'none',             desc: 'Základní trénink. Normální provoz.' },
         { lvl: 2,  debt: 3500,      spins: 25, mult: 1.5,    mod: 'none',             desc: 'Mírný nárůst tlaku.' },
@@ -455,7 +496,12 @@ const Game = (function() {
         shiftIdx: 0, balance: 800, spins: 0, debtSpinsRemaining: 25,
         slotsCount: 3, luckLv: 0, symMult: 1.0, patMult: 1.0, isSpinning: false,
         prices: { luck: 150, slot: 450, patMult: 300 },
-        pendingWinAmount: 0
+        pendingWinAmount: 0,
+        
+        // NOVÉ REGISTRY PRO TVÉ UPRAVENÉ MECHANIKY
+        pendingShiftIdx: null,
+        chosenDebuffLevel: null,
+        debuffStacks: { spinCost: 0, lessLuck: 0, tax: 0 }
     };
 
     let UI = {};
@@ -474,9 +520,21 @@ const Game = (function() {
     }
 
     function init() {
-        AudioEngine.init(); ParticleEngine.init(); initDOM();
+        AudioEngine.init(); 
+        AudioEngine.startBPM(); // Spustit hudbu na pozadí
+        ParticleEngine.init(); 
+        initDOM();
+        
         document.getElementById('introScreen').classList.remove('active');
         logTerminal("Systém inicializován. Spouštím kampaň: 30 podlaží dluhu.", "success");
+        
+        // UPRAVENO (Rule 1): Od 10 levelu jsou dluhy 2x větší
+        SHIFTS.forEach(s => {
+            if (s.lvl >= 10) {
+                s.debt *= 2;
+            }
+        });
+
         loadShift(0); buildReels(); updateUI();
     }
 
@@ -491,18 +549,38 @@ const Game = (function() {
         if (idx >= SHIFTS.length) {
             document.getElementById('victoryScreen').classList.add('active'); Mp3Player.stopAll(); return;
         }
-        state.shiftIdx = idx;
+        
         const cur = SHIFTS[idx];
+        
+        // UPRAVENO (Rule 3): Každý 5 level si hráč vybere jeden permanentní debuff
+        if (cur.lvl % 5 === 0 && state.chosenDebuffLevel !== cur.lvl) {
+            state.pendingShiftIdx = idx;
+            document.getElementById('debuffChoiceScreen').classList.add('active');
+            return; // Zastaví načítání směny, dokud si hráč nevybere debuff
+        }
+
+        state.shiftIdx = idx;
         state.symMult = cur.mult;
         state.debtSpinsRemaining = cur.spins;
 
-        UI.modText.textContent = `${cur.desc}`;
+        let extraText = cur.lvl >= 10 ? " [DLUH x2 / KOMBO KRIZE]" : "";
+        UI.modText.textContent = `${cur.desc}${extraText}`;
         if (cur.mod.startsWith('power')) { UI.modText.className = 'c-green pulse'; }
         else if (cur.mod.startsWith('debuff')) { UI.modText.className = 'c-red glitch'; }
         else { UI.modText.className = 'c-cyan'; }
 
         logTerminal(`Najíždím na Směnu ${cur.lvl}/30. Dluh: ${cur.debt.toLocaleString()} Kč.`, "alert");
         buildReels(); updateUI();
+    }
+
+    // Zpracování výběru debuffu z obrazovky
+    function selectDebuff(type) {
+        state.debuffStacks[type]++;
+        const cur = SHIFTS[state.pendingShiftIdx];
+        state.chosenDebuffLevel = cur.lvl;
+        document.getElementById('debuffChoiceScreen').classList.remove('active');
+        logTerminal(`Aktivováno permanentní prokletí: ${type} (Sada #${state.debuffStacks[type]})`, "alert");
+        loadShift(state.pendingShiftIdx);
     }
 
     function getEffectiveSlotsCount() {
@@ -513,7 +591,10 @@ const Game = (function() {
     }
 
     function getSpinCost() {
-        return SHIFTS[state.shiftIdx].mod === 'debuff_austerity' ? 500 : 100;
+        let cost = SHIFTS[state.shiftIdx].mod === 'debuff_austerity' ? 500 : 100;
+        // Přičtení ceny za vybrané debuffy (každý stoh přidá 150 Kč)
+        cost += (state.debuffStacks.spinCost * 150);
+        return cost;
     }
 
     function buildReels() {
@@ -529,8 +610,11 @@ const Game = (function() {
     function pullSymbol() {
         const curMod = SHIFTS[state.shiftIdx].mod;
         let effLuck = curMod === 'debuff_luck' ? 0 : state.luckLv;
-        let totalWeight = 0;
+        
+        // Aplikace debuffu z výběru každých 5 levelů
+        effLuck = Math.max(0, effLuck - (state.debuffStacks.lessLuck * 2));
 
+        let totalWeight = 0;
         let mapped = SYMBOLS.map(s => {
             let w = s.weight;
             if (s.weight < 60) w += (effLuck * 14);
@@ -599,6 +683,7 @@ const Game = (function() {
     function evaluateSpin(results) {
         state.isSpinning = false;
         const curMod = SHIFTS[state.shiftIdx].mod;
+        const currentLvl = SHIFTS[state.shiftIdx].lvl;
         
         let counts = {}; let totalBase = 0;
         results.forEach(s => { counts[s.char] = (counts[s.char] || 0) + 1; totalBase += (s.base * state.symMult); });
@@ -608,10 +693,20 @@ const Game = (function() {
 
         let effPatMult = state.patMult;
         if (curMod === 'debuff_tax') effPatMult *= 0.7;
-        if (curMod === 'debuff_void') effPatMult = 1.0; // Totální zrušení kombo výhody
+        if (curMod === 'debuff_void') effPatMult = 1.0;
+
+        // UPRAVENO (Rule 2): Od 10 levelu je kombo výkon 4x slabší
+        if (currentLvl >= 10) {
+            effPatMult /= 4;
+        }
 
         let finalWin = maxMatch >= 2 ? Math.floor(totalBase * Math.pow(2.0, maxMatch - 2) * effPatMult) : 0;
-        if (curMod === 'power_gold') finalWin *= 2; // Zdvojení z power-upu
+        if (curMod === 'power_gold') finalWin *= 2;
+
+        // Aplikace permanentního debuffu zdanění (každý stoh krátí o 25%)
+        if (state.debuffStacks.tax > 0) {
+            finalWin = Math.floor(finalWin * Math.pow(0.75, state.debuffStacks.tax));
+        }
 
         if (finalWin > 0) {
             state.pendingWinAmount = finalWin;
@@ -632,7 +727,7 @@ const Game = (function() {
                 Mp3Player.playJackpot();
                 ParticleEngine.spawnExplosion(window.innerWidth/2, window.innerHeight/2, 150, 'gold');
                 logTerminal(`KOMBINOVANÝ JACKPOT (${maxMatch}x ${winChar})`, "success");
-                delay = 1800; // Dostatek času užít si jackpot animaci
+                delay = 1800;
             } else {
                 UI.wrapper.classList.add('shake-animation'); setTimeout(() => UI.wrapper.classList.remove('shake-animation'), 300);
             }
@@ -721,7 +816,7 @@ const Game = (function() {
         UI.spinBtn.disabled = (state.spins <= 0 || state.isSpinning || state.debtSpinsRemaining <= 0);
     }
 
-    return { init, buySpins, buyUpgrade, payDebt, resolveGamble, skipGamble };
+    return { init, buySpins, buyUpgrade, payDebt, resolveGamble, skipGamble, selectDebuff };
 })();
 </script>
 </body>
