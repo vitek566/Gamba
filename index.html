@@ -268,8 +268,9 @@
         <div class="modal-text">Dosáhl jsi pětistupňového milníku. Systém vyžaduje oběť. Vyber si jeden permanentní debuff, který se přičte k tvým stávajícím trestům:</div>
         <div style="display: flex; flex-direction: column; gap: 10px;">
             <button class="modal-btn" onclick="Game.selectDebuff('spinCost')">❌ PROKLETÉ SPINY (Spiny budou 2x dražší!)</button>
-            <button class="modal-btn" onclick="Game.selectDebuff('lessLuck')">❌ SMRTIELNÁ SMŮLA (-2 úrovně k tvému Štěstí)</button>
+            <button class="modal-btn" onclick="Game.selectDebuff('lessLuck')">❌ SMRTELNÁ SMŮLA (-2 úrovně k tvému Štěstí)</button>
             <button class="modal-btn" onclick="Game.selectDebuff('tax')">❌ DAŇOVÝ ÚŘAD (Všechny výsledné výhry kráceny o 25 %)</button>
+            <button class="modal-btn" onclick="Game.selectDebuff('bankruptcy')">❌ HROZBA BANKROTU (+1 % šance na totální kolaps financí po spinu)</button>
         </div>
     </div>
 </div>
@@ -317,7 +318,7 @@
 
     <div class="dashboard">
         <div class="dash-box highlight">
-            <span class="dash-label">Spiny do splátky</span>
+            <span class="dash-label">Spiny do konce směny</span>
             <span id="debtSpinsDisplay" class="dash-val c-red pulse">25</span>
         </div>
         <div class="dash-box">
@@ -541,9 +542,8 @@ const Game = (function() {
         
         pendingShiftIdx: null,
         chosenDebuffLevel: null,
-        debuffStacks: { spinCost: 0, lessLuck: 0, tax: 0 },
+        debuffStacks: { spinCost: 0, lessLuck: 0, tax: 0, bankruptcy: 0 },
 
-        // NOVÉ MECHANIKY
         extraSpinsBoughtCount: 0,
         rescueModeActive: false,
         rescueTimeRemaining: 30,
@@ -612,7 +612,6 @@ const Game = (function() {
         state.symMult = cur.mult;
         state.debtSpinsRemaining = cur.spins;
 
-        // MECHANIKA: 5 spinů zdarma na vybraných (milníkových) levelech
         if (cur.lvl % 5 === 0) {
             state.spins += 5;
             logTerminal(`🎁 BONUS: Obdržel jsi 5 spinů zdarma pro milníkový level ${cur.lvl}!`, "success");
@@ -646,13 +645,8 @@ const Game = (function() {
 
     function getSpinCost() {
         let cost = SHIFTS[state.shiftIdx].mod === 'debuff_austerity' ? 500 : 100;
-        
-        // ÚPRAVA PROKLETÍ: Místo navýšení o 150Kč jsou spiny 2x dražší za každý stack
         cost *= Math.pow(2, state.debuffStacks.spinCost);
-        
-        // MECHANIKA: Násobně dražší spiny o dvojnásobek při každém nákupu (kole navíc)
         cost *= Math.pow(2, state.extraSpinsBoughtCount);
-        
         return cost;
     }
 
@@ -691,11 +685,10 @@ const Game = (function() {
         if (state.balance >= cost && !state.isSpinning) {
             state.balance -= cost; 
             state.spins += 6; 
-            state.extraSpinsBoughtCount++; // Každý nákup zdvojnásobí příští cenu
+            state.extraSpinsBoughtCount++; 
             AudioEngine.spinTick();
             logTerminal(`Koupeny spiny (-${cost} Kč). Příští nákup bude dvojnásobný!`, ""); 
             
-            clearRescueMode();
             updateUI();
         }
     }
@@ -718,12 +711,18 @@ const Game = (function() {
         if (state.rescueModeActive) return;
         state.rescueModeActive = true;
         state.rescueTimeRemaining = 30;
-        logTerminal("⚠️ ZÁCHRANNÝ REŽIM AKTIVOVÁN! Máš 30 vteřin na zaplacení nebo nákup spinů!", "alert");
+        
+        // PŘIPSÁNÍ 5 SPINŮ DO ZÁLOHY I DO LIMITU KOLA
+        state.spins += 5;
+        state.debtSpinsRemaining += 5;
+        
+        logTerminal("⚠️ ZÁCHRANNÝ REŽIM AKTIVOVÁN! Obdržel jsi 5 spinů zdarma a máš 30 vteřin na záchranu nebo nákupy!", "alert");
         
         state.rescueIntervalTimer = setInterval(() => {
             state.rescueTimeRemaining--;
             UI.status.textContent = `🚨 ZÁCHRANNÝ REŽIM: ${state.rescueTimeRemaining}s DO EXEKUCE!`;
             UI.status.className = "status-bar c-red pulse";
+            updateUI();
             
             if (state.rescueTimeRemaining <= 0) {
                 clearInterval(state.rescueIntervalTimer);
@@ -789,7 +788,6 @@ const Game = (function() {
         let effPatMult = state.patMult;
         if (curMod === 'debuff_tax') effPatMult *= 0.7;
         if (curMod === 'debuff_void') effPatMult = 1.0;
-
         if (currentLvl >= 10) { effPatMult /= 4; }
 
         let finalWin = maxMatch >= 2 ? Math.floor(totalBase * Math.pow(2.0, maxMatch - 2) * effPatMult) : 0;
@@ -799,10 +797,11 @@ const Game = (function() {
             finalWin = Math.floor(finalWin * Math.pow(0.75, state.debuffStacks.tax));
         }
 
-        // MECHANIKA: 2% šance na to, že přijdeš o všechny prachy
-        if (Math.random() < 0.02) {
+        // MECHANIKA: Základní 2% šance + 1% za každý stack prokletí "Hrozba bankrotu"
+        let currentBankruptcyChance = 0.02 + (state.debuffStacks.bankruptcy * 0.01);
+        if (Math.random() < currentBankruptcyChance) {
             state.balance = 0;
-            logTerminal("🔴 SYSTÉMOVÝ KOLAPS: Zafungovala 2% šance na totální bankrot! Přišel jsi o všechno!", "alert");
+            logTerminal(`🔴 SYSTÉMOVÝ KOLAPS: Zafungovala šance ${(currentBankruptcyChance * 100).toFixed(0)}% na totální bankrot! Jsi na nule.`, "alert");
             UI.wrapper.classList.add('shake-hard');
             setTimeout(() => UI.wrapper.classList.remove('shake-hard'), 500);
         }
@@ -834,7 +833,6 @@ const Game = (function() {
             UI.status.textContent = `VÝHRA: +${finalWin.toLocaleString()} Kč!`; UI.status.className = "status-bar c-green";
             logTerminal(`Zásah: +${finalWin.toLocaleString()} Kč`, "success");
 
-            // POVINNÝ RISK/ZISK - Přesměrování do modal okna bez možnosti skipu
             setTimeout(() => {
                 document.getElementById('gambleAmountText').textContent = `${state.pendingWinAmount.toLocaleString()} Kč`;
                 document.getElementById('gambleScreen').classList.add('active');
@@ -845,15 +843,10 @@ const Game = (function() {
         }
     }
 
+    // MANUÁLNÍ MÓD: Už automaticky nevolá payDebt() na konci spinů! Pouze spouští záchranný režim.
     function checkEndConditions() {
         if (state.debtSpinsRemaining <= 0 || state.spins <= 0) {
-            const target = SHIFTS[state.shiftIdx].debt;
-            if (state.balance >= target) { 
-                payDebt(); 
-            } else { 
-                // Spuštění záchranného režimu na 30 vteřin
-                startRescueMode();
-            }
+            startRescueMode();
         }
     }
 
@@ -865,7 +858,7 @@ const Game = (function() {
             logTerminal(`Hazard vyšel! Získáno ${state.pendingWinAmount.toLocaleString()} Kč`, "success");
             ParticleEngine.spawnExplosion(window.innerWidth/2, window.innerHeight/2, 60, 'purple');
         } else {
-            Mp3Player.playLoss(); logTerminal(`Ztráta v hazardu! Karta byla ${draw === 'red'?'ČERVENÁ':'ČERNÁ'}. Přišel jsi o výhru.`, "alert");
+            Mp3Player.playLoss(); logTerminal(`Ztráta v hazardu! Karta byla ${draw === 'red'?'ČERVENÁ':'ČERNÁ'}.`, "alert");
         }
         state.pendingWinAmount = 0; updateUI(); checkEndConditions();
     }
