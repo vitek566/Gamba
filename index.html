@@ -402,7 +402,7 @@ const Mp3Player = {
 
 const AudioEngine = (function() {
     let ctx = null;
-    let bgmAudio = new Audio('http://googleusercontent.com/file_content/0');
+    let bgmAudio = new Audio('hudba gamba.mp3');
     bgmAudio.loop = true;
     let isBgmPlaying = false;
 
@@ -501,36 +501,36 @@ const Game = (function() {
     ];
 
     const SHIFTS = [
-        { lvl: 1,  debt: 1000,      spins: 25, mult: 1,      mod: 'none',             desc: 'Základní trénink. Normální provoz.' },
-        { lvl: 2,  debt: 3500,      spins: 25, mult: 1.5,    mod: 'none',             desc: 'Mírný nárůst tlaku.' },
-        { lvl: 3,  debt: 8000,      spins: 20, mult: 2.2,    mod: 'none',             desc: 'Spiny ubývají.' },
-        { lvl: 4,  debt: 18000,     spins: 20, mult: 3.5,    mod: 'none',             desc: 'Příprava na první milník.' },
-        { lvl: 5,  debt: 120000,    spins: 50, mult: 10,     mod: 'power_gold',       desc: '💎 BOSS MILNÍK: Velký dluh / hodně spinů. POWER-UP: Výhry x2!' },
-        { lvl: 6,  debt: 35000,     spins: 20, mult: 5,      mod: 'none',             desc: 'Návrat do reality.' },
-        { lvl: 7,  debt: 60000,     spins: 18, mult: 7,      mod: 'debuff_luck',      desc: '⚠️ DEBUFF: Prokleté válce! Tvůj upgrade Štěstí je ignorován.' },
-        { lvl: 8,  debt: 95000,     spins: 20, mult: 10,     mod: 'none',             desc: 'Standardní provoz.' },
-        { lvl: 9,  debt: 140000,    spins: 18, mult: 14,     mod: 'none',             desc: 'Čas se krátí.' },
-        { lvl: 10, debt: 1500000,   spins: 60, mult: 50,     mod: 'power_overdrive',  desc: '💎 BOSS MILNÍK: POWER-UP: Přetížení! Automaticky max 6 válců zdarma.' },
-        { lvl: 11, debt: 300000,    spins: 20, mult: 20,     mod: 'none',             desc: 'Částky začínají bolet.' },
-        { lvl: 12, debt: 500000,    spins: 22, mult: 30,     mod: 'debuff_inflation', desc: '⚠️ DEBUFF: Hyperinflace! Ceny v obchodě jsou zdvojené.' },
-        { lvl: 13, debt: 750000,    spins: 20, mult: 45,     mod: 'none',             desc: 'Udržuj tempo.' },
-        { lvl: 14, debt: 1100000,   spins: 18, mult: 65,     mod: 'none',             desc: 'Tuhý režim.' },
-        { lvl: 15, debt: 2500000,   spins: 40, mult: 90,     mod: 'power_clover',     desc: '✨ POWER-UP: Čtyřlístky mají masivní bonus k výskytu.' },
-        { lvl: 16, debt: 1800000,   spins: 18, mult: 80,     mod: 'debuff_tax',       desc: '⚠️ DEBUFF: Zdanění výher! Síla kombinací snížena o 30 %.' },
-        { lvl: 17, debt: 2600000,   spins: 20, mult: 120,    mod: 'none',             desc: 'Peníze protékají systémem.' },
-        { lvl: 18, debt: 4000000,   spins: 18, mult: 180,    mod: 'none',             desc: 'Agresivní progrese.' },
-        { lvl: 19, debt: 6500000,   spins: 16, mult: 250,    mod: 'none',             desc: 'Tlak kulminuje.' },
-        { lvl: 20, debt: 60000000,  spins: 75, mult: 1000,   mod: 'none',             desc: '💎 MEGA MILNÍK: Brutální dluh, ale 75 pokusů. Zvládneš to bez výhod?' },
-        { lvl: 21, debt: 12000000,  spins: 20, mult: 400,    mod: 'debuff_crash',     desc: '⚠️ DEBUFF: Kolaps softwaru! Válce uzamčeny na max 4. Žádná velká komba.' },
-        { lvl: 22, debt: 18000000,  spins: 20, mult: 600,    mod: 'none',             desc: 'Zotavování z kolapsu.' },
-        { lvl: 23, debt: 28000000,  spins: 18, mult: 900,    mod: 'none',             desc: 'Hranice lidských možností.' },
-        { lvl: 24, debt: 45000000,  spins: 30, mult: 1500,   mod: 'power_diamond',    desc: '✨ POWER-UP: Diamantový déšť! Diamanty a ohně padají mnohem častěji.' },
-        { lvl: 25, debt: 40000000,  spins: 15, mult: 1100,   mod: 'debuff_austerity', desc: '⚠️ DEBUFF: Krize! Cena za dokoupení spinů stoupla na 500 Kč.' },
-        { lvl: 26, debt: 65000000,  spins: 18, mult: 1800,   mod: 'none',             desc: 'Finálový sprint započal.' },
-        { lvl: 27, debt: 95000000,  spins: 15, mult: 2600,   mod: 'none',             desc: 'Chyba znamená okamžitý konec.' },
-        { lvl: 28, debt: 140000000, spins: 20, mult: 3800,   mod: 'debuff_void',      desc: '⚠️ DEBUFF: Absolutní prázdnota! Zakoupený Kombo výkon je zcela vypnut!' },
-        { lvl: 29, debt: 220000000, spins: 15, mult: 5500,   mod: 'none',             desc: 'Před branami pekla.' },
-        { lvl: 30, debt: 1500000000,spins: 100,mult: 25000,  mod: 'none',             desc: '👑 FINÁLNÍ ŽIVOTNÍ DLUH: 1.5 Miliardy Kč. 100 spinů. Absolutní prověrka!' }
+        { lvl: 1,  debt: 2000,       spins: 25, mult: 1,      mod: 'none',             desc: 'Základní trénink. Normální provoz.' },
+        { lvl: 2,  debt: 7000,       spins: 25, mult: 1.5,    mod: 'none',             desc: 'Mírný nárůst tlaku.' },
+        { lvl: 3,  debt: 16000,      spins: 20, mult: 2.2,    mod: 'none',             desc: 'Spiny ubývají.' },
+        { lvl: 4,  debt: 36000,      spins: 20, mult: 3.5,    mod: 'none',             desc: 'Příprava na první milník.' },
+        { lvl: 5,  debt: 240000,     spins: 50, mult: 10,     mod: 'power_gold',       desc: '💎 BOSS MILNÍK: Velký dluh / hodně spinů. POWER-UP: Výhry x2!' },
+        { lvl: 6,  debt: 70000,      spins: 20, mult: 5,      mod: 'none',             desc: 'Návrat do reality.' },
+        { lvl: 7,  debt: 120000,     spins: 18, mult: 7,      mod: 'debuff_luck',      desc: '⚠️ DEBUFF: Prokleté válce! Tvůj upgrade Štěstí je ignorován.' },
+        { lvl: 8,  debt: 190000,     spins: 20, mult: 10,     mod: 'none',             desc: 'Standardní provoz.' },
+        { lvl: 9,  debt: 280000,     spins: 18, mult: 14,     mod: 'none',             desc: 'Čas se krátí.' },
+        { lvl: 10, debt: 3000000,    spins: 60, mult: 50,     mod: 'power_overdrive',  desc: '💎 BOSS MILNÍK: POWER-UP: Přetížení! Automaticky max 6 válců zdarma.' },
+        { lvl: 11, debt: 600000,     spins: 20, mult: 20,     mod: 'none',             desc: 'Částky začínají bolet.' },
+        { lvl: 12, debt: 1000000,    spins: 22, mult: 30,     mod: 'debuff_inflation', desc: '⚠️ DEBUFF: Hyperinflace! Ceny v obchodě jsou zdvojené.' },
+        { lvl: 13, debt: 1500000,    spins: 20, mult: 45,     mod: 'none',             desc: 'Udržuj tempo.' },
+        { lvl: 14, debt: 2200000,    spins: 18, mult: 65,     mod: 'none',             desc: 'Tuhý režim.' },
+        { lvl: 15, debt: 5000000,    spins: 40, mult: 90,     mod: 'power_clover',     desc: '✨ POWER-UP: Čtyřlístky mají masivní bonus k výskytu.' },
+        { lvl: 16, debt: 3600000,    spins: 18, mult: 80,     mod: 'debuff_tax',       desc: '⚠️ DEBUFF: Zdanění výher! Síla kombinací snížena o 30 %.' },
+        { lvl: 17, debt: 5200000,    spins: 20, mult: 120,    mod: 'none',             desc: 'Peníze protékají systémem.' },
+        { lvl: 18, debt: 8000000,    spins: 18, mult: 180,    mod: 'none',             desc: 'Agresivní progrese.' },
+        { lvl: 19, debt: 13000000,   spins: 16, mult: 250,    mod: 'none',             desc: 'Tlak kulminuje.' },
+        { lvl: 20, debt: 120000000,  spins: 75, mult: 1000,   mod: 'none',             desc: '💎 MEGA MILNÍK: Brutální dluh, ale 75 pokusů. Zvládneš to bez výhod?' },
+        { lvl: 21, debt: 24000000,   spins: 20, mult: 400,    mod: 'debuff_crash',     desc: '⚠️ DEBUFF: Kolaps softwaru! Válce uzamčeny na max 4. Žádná velká komba.' },
+        { lvl: 22, debt: 36000000,   spins: 20, mult: 600,    mod: 'none',             desc: 'Zotavování z kolapsu.' },
+        { lvl: 23, debt: 56000000,   spins: 18, mult: 900,    mod: 'none',             desc: 'Hranice lidských možností.' },
+        { lvl: 24, debt: 90000000,   spins: 30, mult: 1500,   mod: 'power_diamond',    desc: '✨ POWER-UP: Diamantový déšť! Diamanty a ohně padají mnohem častěji.' },
+        { lvl: 25, debt: 80000000,   spins: 15, mult: 1100,   mod: 'debuff_austerity', desc: '⚠️ DEBUFF: Krize! Cena za dokoupení spinů stoupla na 500 Kč.' },
+        { lvl: 26, debt: 130000000,  spins: 18, mult: 1800,   mod: 'none',             desc: 'Finálový sprint započal.' },
+        { lvl: 27, debt: 190000000,  spins: 15, mult: 2600,   mod: 'none',             desc: 'Chyba znamená okamžitý konec.' },
+        { lvl: 28, debt: 280000000,  spins: 20, mult: 3800,   mod: 'debuff_void',      desc: '⚠️ DEBUFF: Absolutní prázdnota! Zakoupený Kombo výkon je zcela vypnut!' },
+        { lvl: 29, debt: 440000000,  spins: 15, mult: 5500,   mod: 'none',             desc: 'Před branami pekla.' },
+        { lvl: 30, debt: 3000000000, spins: 100,mult: 25000,  mod: 'none',             desc: '👑 FINÁLNÍ ŽIVOTNÍ DLUH: 3 Miliardy Kč. 100 spinů. Absolutní prověrka!' }
     ];
 
     let state = {
